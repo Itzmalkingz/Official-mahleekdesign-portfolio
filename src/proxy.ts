@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -33,10 +33,9 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (
-    !user &&
-    (request.nextUrl.pathname.startsWith("/admin/dashboard"))
-  ) {
+  // Protect dashboard; API routes do their own Supabase session check (see /api/scrape & /api/screenshot)
+  // to allow graceful dev fallback while still requiring auth in production
+  if (!user && request.nextUrl.pathname.startsWith("/admin/dashboard")) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/login";
     return NextResponse.redirect(url);

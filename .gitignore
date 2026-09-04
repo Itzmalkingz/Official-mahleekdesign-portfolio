@@ -34,6 +34,13 @@ yarn-error.log*
 # vercel
 .vercel
 
+# screenshots (local filesystem cache — ephemeral on Vercel; use Supabase for persistence if needed)
+public/screenshots/*.png
+public/screenshots/*.jpg
+public/screenshots/*.jpeg
+public/screenshots/*.webp
+!public/screenshots/.gitkeep
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

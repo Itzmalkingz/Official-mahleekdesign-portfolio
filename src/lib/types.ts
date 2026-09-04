@@ -8,4 +8,9 @@ export interface Project {
   live_url: string;
   tags: string[];
   created_at: string;
+  updated_at: string;
+  featured: boolean;
+  sort_order: number;
+  case_study: string;
+  services: string[];
 }

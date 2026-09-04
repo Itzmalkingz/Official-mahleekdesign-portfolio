@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import type { Project } from "@/lib/types";
 import RevealOnScroll from "@/components/ui/RevealOnScroll";
@@ -8,14 +9,17 @@ import RevealOnScroll from "@/components/ui/RevealOnScroll";
 export default function WebProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const fetchProjects = async () => {
-      const { data } = await supabase
+      const { data, error: fetchError } = await supabase
         .from("projects")
         .select("*")
         .eq("category", "web")
+        .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false });
+      if (fetchError) setError(true);
       if (data) setProjects(data as Project[]);
       setLoading(false);
     };
@@ -43,6 +47,11 @@ export default function WebProjectsPage() {
         <div className="empty-state" style={{ marginTop: "3rem" }}>
           <h3>Loading projects...</h3>
         </div>
+      ) : error ? (
+        <div className="empty-state" style={{ marginTop: "3rem" }}>
+          <h3>Projects are temporarily unavailable</h3>
+          <p>Please try again shortly.</p>
+        </div>
       ) : projects.length === 0 ? (
         <div className="empty-state" style={{ marginTop: "3rem" }}>
           <h3>No web projects yet</h3>
@@ -52,7 +61,7 @@ export default function WebProjectsPage() {
         <div className="project-stack" style={{ marginTop: "3rem" }}>
           {projects.map((project, i) => (
             <RevealOnScroll key={project.id} delay={i * 80}>
-              <div className="project-panel" tabIndex={0} role="link" aria-label={`Open ${project.title}`}>
+              <Link href={`/web-projects/${project.id}`} className="project-panel" aria-label={`Open ${project.title}`}>
                 <div className="project-index">{String(i + 1).padStart(2, "0")}</div>
                 <div className="project-visual">
                   {project.image_url ? (
@@ -68,12 +77,12 @@ export default function WebProjectsPage() {
                   <h3>{project.title}</h3>
                   {project.description && <p>{project.description}</p>}
                   {project.live_url && (
-                    <a href={project.live_url} target="_blank" rel="noreferrer" className="project-link">
+                    <span className="project-link">
                       View Live Project
-                    </a>
+                    </span>
                   )}
                 </div>
-              </div>
+              </Link>
             </RevealOnScroll>
           ))}
         </div>

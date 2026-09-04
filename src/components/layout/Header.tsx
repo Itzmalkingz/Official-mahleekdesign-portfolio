@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
   { href: "/", label: "Home" },
-  { href: "/web-projects", label: "Web Dev" },
+  { href: "/web-projects", label: "Digital Work" },
   { href: "/gallery", label: "Gallery" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
@@ -40,9 +40,9 @@ export default function Header() {
   return (
     <header
       className={`site-header ${scrolled ? "header-scrolled" : ""}`}
-    >
+      >
       <Link href="/" className="brand-mark" aria-label="Mahleek Design home">
-        <span className="brand-mark-text">M</span>
+        <img src="/images/favicon/branding-module-1.png" alt="Mahleek Design" />
       </Link>
 
       <nav className="site-nav" aria-label="Main navigation">

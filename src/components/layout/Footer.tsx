@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="footer-inner">
         <div className="footer-brand">
           <span className="footer-logo">Mahleek Design</span>
-          <p>Premium brand identity and web design for ambitious businesses.</p>
+          <p>Independent brand identity, campaign design, and digital work from Lagos.</p>
         </div>
         <div className="footer-links">
           <div>
@@ -23,6 +23,9 @@ export default function Footer() {
               WhatsApp
             </a>
             <a href="mailto:mahleekdesign@gmail.com">Email</a>
+            <a href="https://github.com" target="_blank" rel="noreferrer" aria-label="GitHub (add your profile link)">
+              GitHub
+            </a>
           </div>
         </div>
         <div className="footer-bottom">

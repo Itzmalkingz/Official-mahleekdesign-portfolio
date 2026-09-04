@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import RevealOnScroll from "@/components/ui/RevealOnScroll";
+
+export const metadata: Metadata = {
+  title: "About",
+  description: "About Mahleek — Lagos-based brand designer and web developer building premium identities and websites.",
+};
 
 export default function AboutPage() {
   return (
@@ -10,7 +16,7 @@ export default function AboutPage() {
       <div className="about-grid" style={{ marginTop: "2rem" }}>
         <div className="about-text">
           <RevealOnScroll>
-            <h2>I design from the place where business goals meet emotion.</h2>
+            <h2>I design where business goals meet a real human response.</h2>
           </RevealOnScroll>
           <RevealOnScroll delay={60}>
             <p>
@@ -31,25 +37,13 @@ export default function AboutPage() {
 
         <RevealOnScroll delay={100}>
           <div className="about-portrait">
-            <div
-              style={{
-                width: "100%",
-                aspectRatio: "16/10",
-                borderRadius: "0.85rem",
-                background: "linear-gradient(135deg, rgba(217,182,111,0.3), rgba(92,225,230,0.2))",
-                display: "grid",
-                placeItems: "center",
-                fontSize: "3rem",
-                fontWeight: 900,
-                color: "#d9b66f",
-              }}
-            >
-              M
-            </div>
+            <img
+              src="/images/Ember%20%26%20Oak%20Brand%20Identity/1001313684.jpg"
+              alt="Early identity sketch for Ember and Oak"
+            />
             <span className="about-portrait-label">Design philosophy</span>
             <p>
-              Every screen should make the business feel more valuable, more trustworthy, and easier
-              to choose.
+              Every screen should make a business easier to understand, easier to trust, and harder to forget.
             </p>
           </div>
         </RevealOnScroll>

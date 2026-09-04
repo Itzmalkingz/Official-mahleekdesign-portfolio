@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import RevealOnScroll from "@/components/ui/RevealOnScroll";
+
+export const metadata: Metadata = {
+  title: "Contact",
+  description: "Get in touch with Mahleek Design — brand identity, web design, and visual systems from Lagos.",
+};
 
 export default function ContactPage() {
   return (
@@ -9,12 +15,12 @@ export default function ContactPage() {
           <p className="section-kicker">Ready for a stronger brand presence?</p>
         </RevealOnScroll>
         <RevealOnScroll delay={60}>
-          <h2>Let us build the version of your business people instantly trust.</h2>
+          <h2>Make the next version of your brand unmistakable.</h2>
         </RevealOnScroll>
         <RevealOnScroll delay={120}>
           <p>
-            Send a message with your project idea. I will help you clarify what to build, what to
-            improve, and how to make the brand feel more premium from the first touch.
+            Share what is changing, what is not working, or what you are about to launch. We will
+            work out the right shape for it.
           </p>
         </RevealOnScroll>
         <RevealOnScroll delay={180}>

@@ -10,15 +10,19 @@ import Parallax from "@/components/ui/Parallax";
 
 export default function HomePage() {
   const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
+  const [projectsError, setProjectsError] = useState(false);
 
   useEffect(() => {
     const fetchProjects = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("projects")
         .select("*")
         .eq("category", "web")
+        .eq("featured", true)
+        .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false })
-        .limit(3);
+        .limit(6);
+      if (error) setProjectsError(true);
       if (data) setFeaturedProjects(data as Project[]);
     };
     fetchProjects();
@@ -43,19 +47,18 @@ export default function HomePage() {
             <p className="section-kicker">Mahleek Design — Brand identity, web, and visual systems</p>
           </RevealOnScroll>
           <RevealOnScroll delay={60}>
-            <h1>Premium brands and websites that make businesses impossible to ignore.</h1>
+            <h1>Design that gives good businesses a sharper voice.</h1>
           </RevealOnScroll>
           <RevealOnScroll delay={120}>
             <p className="hero-text">
-              I help founders, service businesses, and creative brands look more trusted, communicate
-              faster, and turn attention into real enquiries with refined design and clean frontend
-              execution.
+              Brand identity, campaign design, and websites for teams ready to be recognised before
+              they have to explain themselves. Clear thinking, distinctive visuals, meticulous build.
             </p>
           </RevealOnScroll>
           <RevealOnScroll delay={180}>
             <div className="hero-actions">
               <Link href="/web-projects" className="btn-primary">
-                Explore My Work
+                See selected work
               </Link>
               <Link href="/contact" className="btn-ghost">
                 Get in Touch
@@ -81,28 +84,20 @@ export default function HomePage() {
         </div>
 
         <aside className="hero-showpiece" aria-label="Mahleek portfolio positioning">
-          <div className="showpiece-label">Selected studio profile</div>
-          <div
+          <div className="showpiece-label">Selected identity work</div>
+          <img
             className="hero-portrait"
-            style={{
-              background: "linear-gradient(135deg, rgba(217,182,111,0.3), rgba(92,225,230,0.2))",
-              display: "grid",
-              placeItems: "center",
-              fontSize: "4rem",
-              fontWeight: 900,
-              color: "#d9b66f",
-            }}
-          >
-            M
-          </div>
+            src="/images/my%20personal%20picture/mahleek.png"
+            alt="Mahleek, founder of Mahleek Design"
+          />
           <div className="showpiece-bottom">
             <div>
-              <strong>Brand Systems</strong>
-              <span>Logos, identity, social presence</span>
+              <strong>Identity systems</strong>
+              <span>Logos, voice, and visual language</span>
             </div>
             <div>
-              <strong>Web Experiences</strong>
-              <span>Responsive sites with conversion focus</span>
+              <strong>Digital presence</strong>
+              <span>Websites built to make the case</span>
             </div>
           </div>
         </aside>
@@ -156,6 +151,34 @@ export default function HomePage() {
         </RevealOnScroll>
       </section>
 
+      {/* Studio statement */}
+      <section className="studio-statement section-padding">
+        <RevealOnScroll>
+          <div className="studio-statement-grid">
+            <p className="section-kicker">A point of view</p>
+            <div>
+              <h2>A good brand should feel like it has already arrived.</h2>
+              <p>
+                Not louder. Not trendier. More precise in what it says, how it looks, and where it
+                leads people next. That is the work: make the right details impossible to miss.
+              </p>
+              <Link href="/about" className="text-link">More about the studio <span aria-hidden="true">↗</span></Link>
+            </div>
+          </div>
+        </RevealOnScroll>
+        <div className="studio-image-rhythm" aria-label="Selected brand work">
+          <RevealOnScroll delay={80} className="studio-image studio-image-main">
+            <img src="/images/N8V%20media%20brand%20identity/f23fa0841b56591065bed8bb26a9d6b6.jpg" alt="N8V Media identity application" loading="lazy" />
+          </RevealOnScroll>
+          <RevealOnScroll delay={150} className="studio-image studio-image-secondary">
+            <img src="/images/Ember%20%26%20Oak%20Brand%20Identity/1001313086.jpg" alt="Ember and Oak brand identity work" loading="lazy" />
+          </RevealOnScroll>
+          <RevealOnScroll delay={220} className="studio-image studio-image-detail">
+            <img src="/images/Social%20media%20designs/15d472ec7c0a3f8a03f74e496f60e422.jpg" alt="Mahleek social media design work" loading="lazy" />
+          </RevealOnScroll>
+        </div>
+      </section>
+
       {/* Featured Projects */}
       {featuredProjects.length > 0 && (
         <section className="section-padding">
@@ -170,7 +193,7 @@ export default function HomePage() {
           <div className="project-stack" style={{ marginTop: "2rem" }}>
             {featuredProjects.map((project, i) => (
               <RevealOnScroll key={project.id} delay={i * 80}>
-                <div className="project-panel" tabIndex={0} role="link" aria-label={`Open ${project.title}`}>
+                <Link href={`/web-projects/${project.id}`} className="project-panel" aria-label={`Open ${project.title}`}>
                   <div className="project-index">{String(i + 1).padStart(2, "0")}</div>
                   <div className="project-visual">
                     {project.image_url ? (
@@ -180,17 +203,27 @@ export default function HomePage() {
                     )}
                   </div>
                   <div className="project-copy">
-                    <span className="project-tag">{project.title}</span>
-                    <h3>{project.description || "A refined web experience built with strategy and clean execution."}</h3>
+                    <span className="project-tag">{project.tags?.length ? project.tags.join(" · ") : "Digital experience"}</span>
+                    <h3>{project.title}</h3>
+                    {project.description && <p>{project.description}</p>}
                     {project.live_url && (
-                      <a href={project.live_url} target="_blank" rel="noreferrer" className="project-link">
+                      <span className="project-link">
                         View Live Project
-                      </a>
+                      </span>
                     )}
                   </div>
-                </div>
+                </Link>
               </RevealOnScroll>
             ))}
+          </div>
+        </section>
+      )}
+
+      {projectsError && (
+        <section className="section-padding">
+          <div className="empty-state">
+            <h3>Featured work is temporarily unavailable.</h3>
+            <p>Please visit the portfolio shortly, or get in touch to request relevant work.</p>
           </div>
         </section>
       )}
@@ -202,7 +235,7 @@ export default function HomePage() {
         </RevealOnScroll>
         <RevealOnScroll delay={60}>
           <h2 className="section-heading">
-            A clear process that turns raw ideas into a brand people remember.
+            A practical way to make the right impression, from the first decision to the final screen.
           </h2>
         </RevealOnScroll>
         <div className="service-grid">
@@ -247,7 +280,7 @@ export default function HomePage() {
             <p className="section-kicker">Ready for a stronger brand presence?</p>
           </RevealOnScroll>
           <RevealOnScroll delay={60}>
-            <h2>Let us build the version of your business people instantly trust.</h2>
+            <h2>Make the next version of your brand unmistakable.</h2>
           </RevealOnScroll>
           <RevealOnScroll delay={120}>
             <p>
