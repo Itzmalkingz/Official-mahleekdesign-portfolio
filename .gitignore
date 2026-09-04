@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # dependencies
 /node_modules
 /.pnp
@@ -7,6 +8,14 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+=======
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+>>>>>>> 0019bd9418d811c338303c868a2310c359d5948a
 
 # testing
 /coverage
@@ -26,14 +35,22 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+<<<<<<< HEAD
 .pnpm-debug.log*
 
 # env files
 .env*.local
+=======
+
+# local env files
+.env*.local
+.env
+>>>>>>> 0019bd9418d811c338303c868a2310c359d5948a
 
 # vercel
 .vercel
 
+<<<<<<< HEAD
 # screenshots (local filesystem cache — ephemeral on Vercel; use Supabase for persistence if needed)
 public/screenshots/*.png
 public/screenshots/*.jpg
@@ -41,6 +58,8 @@ public/screenshots/*.jpeg
 public/screenshots/*.webp
 !public/screenshots/.gitkeep
 
+=======
+>>>>>>> 0019bd9418d811c338303c868a2310c359d5948a
 # typescript
 *.tsbuildinfo
 next-env.d.ts
