@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { supabaseUrl, supabaseAnonKey } from "@/lib/supabase/env";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,8 +23,8 @@ function isPrivateHost(host: string) {
 async function verifyAuth(request: NextRequest): Promise<boolean> {
   try {
     const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      supabaseUrl(),
+      supabaseAnonKey(),
       {
         cookies: { getAll() { return request.cookies.getAll(); }, setAll() {} },
       }

@@ -65,7 +65,7 @@ function Toggle({
 }
 
 interface Props {
-  initial?: Project | null;
+  initial?: Partial<Project> | null;
   mode?: "create" | "edit";
 }
 

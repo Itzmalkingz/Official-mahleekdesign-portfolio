@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { supabaseUrl, supabaseAnonKey } from "@/lib/supabase/env";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -145,8 +146,8 @@ async function verifyAuth(request: NextRequest): Promise<boolean> {
     // We check Supabase getUser; if it errors we allow with warning.
     try {
       const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        supabaseUrl(),
+        supabaseAnonKey(),
         {
           cookies: {
             getAll() { return request.cookies.getAll(); },
@@ -165,8 +166,8 @@ async function verifyAuth(request: NextRequest): Promise<boolean> {
   }
   try {
     const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      supabaseUrl(),
+      supabaseAnonKey(),
       {
         cookies: { getAll() { return request.cookies.getAll(); }, setAll() {} },
       }
