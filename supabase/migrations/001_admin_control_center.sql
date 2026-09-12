@@ -143,12 +143,12 @@ CREATE TABLE IF NOT EXISTS public.settings (
 );
 
 INSERT INTO public.settings (key, value) VALUES
-  ('general',  jsonb_build_object('site_name','Mahleek Design','site_url',COALESCE('sqlite://unused',''),'description','Memorable brands. Purposeful web systems.')) ON CONFLICT (key) DO NOTHING,
-  ('contact',  jsonb_build_object('email','mahleekdesign@gmail.com','whatsapp','https://wa.me/2349116537383','location','','phone','')) ON CONFLICT (key) DO NOTHING,
-  ('social',   jsonb_build_object('github','https://github.com','twitter','','instagram','','linkedin','')) ON CONFLICT (key) DO NOTHING,
-  ('homepage', jsonb_build_object('hero_heading','','hero_description','','cta_primary','Start a Project','cta_secondary','View Work')) ON CONFLICT (key) DO NOTHING,
-  ('booking',  jsonb_build_object('enabled',false,'confirmation_message','Thanks! Your session request has been received.')) ON CONFLICT (key) DO NOTHING
-ON CONFLICT DO NOTHING;
+  ('general',  jsonb_build_object('site_name','Mahleek Design','site_url','','description','Memorable brands. Purposeful web systems.')),
+  ('contact',  jsonb_build_object('email','mahleekdesign@gmail.com','whatsapp','https://wa.me/2349116537383','location','','phone','')),
+  ('social',   jsonb_build_object('github','https://github.com','twitter','','instagram','','linkedin','')),
+  ('homepage', jsonb_build_object('hero_heading','','hero_description','','cta_primary','Start a Project','cta_secondary','View Work')),
+  ('booking',  jsonb_build_object('enabled',false,'confirmation_message','Thanks! Your session request has been received.'))
+ON CONFLICT (key) DO NOTHING;
 
 ALTER TABLE public.settings ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Settings: read all authenticated" ON public.settings;
