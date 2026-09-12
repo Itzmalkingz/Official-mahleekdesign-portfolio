@@ -1,27 +1,24 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mahleek.design";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Mahleek Design | Premium Brand Identity and Web Design Portfolio",
+    default: "Mahleek Design | Memorable Brands. Purposeful Web Systems.",
     template: "%s | Mahleek Design",
   },
   description:
-    "Mahleek Design creates premium brand identities, websites, and visual systems for ambitious businesses that want to look trusted, memorable, and ready for growth.",
+    "Mahleek Design creates memorable brand identities and purposeful web systems for businesses ready to stand out and work smarter.",
   keywords: [
     "brand identity",
-    "web design",
-    "graphic design",
-    "portfolio",
-    "frontend development",
-    "logo design",
+    "web systems",
+    "web development",
+    "custom web applications",
+    "design studio",
+    "brand design",
     "Mahleek Design",
-    "Lagos brand designer",
   ],
   authors: [{ name: "Mahleek Design" }],
   creator: "Mahleek Design",
@@ -30,9 +27,8 @@ export const metadata: Metadata = {
     apple: "/images/favicon/branding-module-1.png",
   },
   openGraph: {
-    title: "Mahleek Design | Premium Brand Identity and Web Design",
-    description:
-      "Cinematic portfolio of brand identity, web development, and visual design for growth-focused businesses.",
+    title: "Mahleek Design | Memorable Brands. Purposeful Web Systems.",
+    description: "A creative technology studio building memorable brand identities and purposeful web systems.",
     type: "website",
     url: siteUrl,
     siteName: "Mahleek Design",
@@ -48,9 +44,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mahleek Design | Premium Brand Identity and Web Design",
-    description:
-      "Premium brand identities, websites, and visual systems for ambitious businesses.",
+    title: "Mahleek Design | Memorable Brands. Purposeful Web Systems.",
+    description: "A creative technology studio building memorable brand identities and purposeful web systems.",
     images: ["/images/favicon/branding-module-1.png"],
   },
   robots: {
@@ -68,19 +63,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">
-        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[999] focus:px-4 focus:py-2 focus:bg-white focus:text-black focus:rounded">
-          Skip to content
-        </a>
-        <div className="bg-overlay" aria-hidden="true" />
-        <div className="bg-vignette" aria-hidden="true" />
-        <div className="progress-rail" aria-hidden="true">
-          <span id="scrollProgress" />
-        </div>
-        <Header />
-        <main id="main-content" tabIndex={-1}>{children}</main>
-        <Footer />
-      </body>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }

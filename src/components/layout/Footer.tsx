@@ -6,14 +6,17 @@ export default function Footer() {
       <div className="footer-inner">
         <div className="footer-brand">
           <span className="footer-logo">Mahleek Design</span>
-          <p>Independent brand identity, campaign design, and digital work from Lagos.</p>
+          <p>Brands with meaning. Systems with purpose.</p>
         </div>
         <div className="footer-links">
           <div>
-            <h4>Navigation</h4>
-            <Link href="/">Home</Link>
-            <Link href="/web-projects">Web Projects</Link>
-            <Link href="/gallery">Gallery</Link>
+            <h4>Work</h4>
+            <Link href="/work">All Work</Link>
+            <Link href="/brand-identity">Brand Identity</Link>
+            <Link href="/web-systems">Web Systems</Link>
+          </div>
+          <div>
+            <h4>Studio</h4>
             <Link href="/about">About</Link>
             <Link href="/contact">Contact</Link>
           </div>

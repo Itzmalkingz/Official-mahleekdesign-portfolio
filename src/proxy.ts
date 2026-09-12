@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { supabaseAnonKey, supabaseUrl } from "@/lib/supabase/env";
 
 export default async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -7,8 +8,8 @@ export default async function proxy(request: NextRequest) {
   });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl(),
+    supabaseAnonKey(),
     {
       cookies: {
         getAll() {
@@ -33,11 +34,55 @@ export default async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect dashboard; API routes do their own Supabase session check (see /api/scrape & /api/screenshot)
-  // to allow graceful dev fallback while still requiring auth in production
-  if (!user && request.nextUrl.pathname.startsWith("/admin/dashboard")) {
+  const { pathname } = request.nextUrl;
+  const isAdminPath = pathname.startsWith("/admin");
+  const isLoginPage = pathname === "/admin/login";
+
+  if (!user) {
+    if (isAdminPath && !isLoginPage) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/login";
+      return NextResponse.redirect(url);
+    }
+    return supabaseResponse;
+  }
+
+  if (!isAdminPath) return supabaseResponse;
+
+  // /admin → dashboard
+  if (pathname === "/admin" || pathname === "/admin/") {
     const url = request.nextUrl.clone();
-    url.pathname = "/admin/login";
+    url.pathname = "/admin/dashboard";
+    return NextResponse.redirect(url);
+  }
+
+  // Resolve the profile role. If the table isn't created yet (pre-migration)
+  // or the user has no row (project unseeded), treat as "unconfigured" so the
+  // first login is never locked out. Once roles exist, only admin/editor may
+  // enter the console.
+  let role: "admin" | "editor" | "staff" | "unconfigured" = "unconfigured";
+  try {
+    const { data } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (data?.role) role = data.role;
+  } catch {
+    role = "unconfigured";
+  }
+
+  const allowed = role === "admin" || role === "editor" || role === "unconfigured";
+
+  if (isLoginPage) {
+    const url = request.nextUrl.clone();
+    url.pathname = allowed ? "/admin/dashboard" : "/admin/no-access";
+    return NextResponse.redirect(url);
+  }
+
+  if (!allowed) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin/no-access";
     return NextResponse.redirect(url);
   }
 

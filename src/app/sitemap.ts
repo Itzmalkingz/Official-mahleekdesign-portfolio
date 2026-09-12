@@ -3,7 +3,9 @@ import type { MetadataRoute } from "next";
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = process.env.NEXT_PUBLIC_SITE_URL || "https://mahleek.design";
   const now = new Date();
-  const routes = ["", "/about", "/contact", "/gallery", "/web-projects"].map((p) => ({
+  const routes = [
+    "", "/about", "/contact", "/brand-identity", "/web-systems", "/work"
+  ].map((p) => ({
     url: `${base}${p || "/"}`,
     lastModified: now,
     changeFrequency: "weekly" as const,

@@ -48,3 +48,15 @@ public/screenshots/*.webp
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local scratch / tooling (not part of the app)
+*.log
+install-*.txt
+install_*.txt
+skills-lock.json
+opencode.json
+/start-dev.js
+/data/
+/.agents/
+/.aider-desk/
+/.autohand/

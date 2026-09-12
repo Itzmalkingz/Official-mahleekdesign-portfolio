@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
-import RevealOnScroll from "@/components/ui/RevealOnScroll";
+import { IconShield } from "@/components/admin/icons";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
@@ -27,35 +27,50 @@ export default function AdminLoginPage() {
       setLoading(false);
       return;
     }
-
-    router.push("/admin/dashboard");
+    router.replace("/admin/dashboard");
   };
 
   return (
-    <div className="admin-layout">
-      <RevealOnScroll>
-        <div className="admin-card">
-          <h1>Admin Login</h1>
-          <p>Sign in to manage your portfolio.</p>
+    <div className="ac-login">
+      <div className="ac-login-brand">
+        <div className="logo">
+          <img src="/images/favicon/branding-module-1.png" alt="" />
+          Mahleek Studio
+        </div>
+        <div className="tagline">
+          Run the studio from a purpose-built <span>control center</span>.
+        </div>
+        <div style={{ fontSize: "0.82rem", color: "#7a88a0" }}>
+          Projects · Leads · Bookings · Content
+        </div>
+      </div>
 
-          <form onSubmit={handleLogin}>
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
+      <div className="ac-login-form">
+        <div className="box">
+          <h1>Sign in</h1>
+          <p style={{ color: "var(--aslate)", fontSize: "0.9rem", margin: "0 0 1.5rem" }}>
+            Access the Mahleek Studio admin console.
+          </p>
+
+          <form onSubmit={handleLogin} style={{ display: "grid", gap: "1rem" }}>
+            <div>
+              <label className="ac-label" htmlFor="email">Email</label>
               <input
                 id="email"
+                className="ac-input"
                 type="email"
-                placeholder="your@email.com"
+                placeholder="you@mahleek.design"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
               />
             </div>
-
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
+            <div>
+              <label className="ac-label" htmlFor="password">Password</label>
               <input
                 id="password"
+                className="ac-input"
                 type="password"
                 placeholder="Your password"
                 value={password}
@@ -65,19 +80,18 @@ export default function AdminLoginPage() {
               />
             </div>
 
-            {error && <p className="form-error">{error}</p>}
+            {error && (
+              <div className="ac-form-error">
+                <IconShield size={15} /> {error}
+              </div>
+            )}
 
-            <button
-              type="submit"
-              className="btn-primary"
-              style={{ width: "100%", marginTop: "0.5rem" }}
-              disabled={loading}
-            >
-              {loading ? "Signing in..." : "Sign In"}
+            <button type="submit" className="ac-btn primary" disabled={loading} style={{ width: "100%", padding: "0.65rem 1rem" }}>
+              {loading ? "Signing in…" : "Sign in"}
             </button>
           </form>
         </div>
-      </RevealOnScroll>
+      </div>
     </div>
   );
 }

@@ -1,14 +1,18 @@
-import type { Metadata } from "next";
+import "../../css/admin.css";
+import AdminShell from "@/components/admin/AdminShell";
+import { getProfile } from "@/lib/supabase/server";
 
-export const metadata: Metadata = {
-  title: "Admin | Mahleek Design",
-  robots: { index: false, follow: false },
-};
-
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
-  return <>{children}</>;
+}: Readonly<{ children: React.ReactNode }>) {
+  const session = await getProfile();
+
+  const profile = session?.profile ?? {
+    email: "",
+    full_name: null as string | null,
+    role: "",
+    avatar_url: null as string | null,
+  };
+
+  return <AdminShell profile={profile}>{children}</AdminShell>;
 }

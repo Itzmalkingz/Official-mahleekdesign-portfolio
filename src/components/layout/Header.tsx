@@ -6,9 +6,9 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/web-projects", label: "Digital Work" },
-  { href: "/gallery", label: "Gallery" },
+  { href: "/work", label: "Work" },
+  { href: "/brand-identity", label: "Brand Identity" },
+  { href: "/web-systems", label: "Web Systems" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
@@ -70,7 +70,7 @@ export default function Header() {
       </button>
 
       <Link href="/contact" className="header-cta">
-        Book a Call
+        Start a Project
       </Link>
 
       <AnimatePresence>
