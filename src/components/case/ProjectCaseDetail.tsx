@@ -30,6 +30,10 @@ export default function ProjectCaseDetail({ project, related, backHref, backLabe
       : []),
   ];
 
+  // For web projects, include website preview in the gallery
+  const isWebProject = project.category === "web-systems" || project.category === "brand-web";
+  const heroImage = project.website_preview_url || project.cover_image;
+
   const caseSections = [
     { key: "challenge", label: "The Challenge", body: project.challenge },
     { key: "thinking", label: "The Thinking", body: project.thinking },
@@ -113,7 +117,13 @@ export default function ProjectCaseDetail({ project, related, backHref, backLabe
             marginBottom: "1rem",
           }}
         >
-          {allImages.length > 0 ? (
+          {heroImage ? (
+            <img
+              src={heroImage}
+              alt={project.title}
+              style={{ width: "100%", maxHeight: "42rem", objectFit: "contain", display: "block" }}
+            />
+          ) : allImages.length > 0 ? (
             <img
               src={allImages[activeImage]}
               alt={`${project.title} preview`}
@@ -143,6 +153,46 @@ export default function ProjectCaseDetail({ project, related, backHref, backLabe
           )}
         </div>
       </RevealOnScroll>
+
+      {/* Live Website Preview for web projects */}
+      {isWebProject && project.live_url && (
+        <RevealOnScroll delay={70}>
+          <div style={{ marginBottom: "2.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem", flexWrap: "wrap", gap: "0.75rem" }}>
+              <div>
+                <p className="section-kicker">Live Website Preview</p>
+                <h2 style={{ fontSize: "1.3rem", fontWeight: 700, color: "var(--ink)", marginTop: "0.25rem" }}>
+                  Experience the live website
+                </h2>
+              </div>
+              <a href={project.live_url} target="_blank" rel="noreferrer" className="btn-primary">
+                Visit Live Website &#8599;
+              </a>
+            </div>
+            <div
+              style={{
+                borderRadius: "1rem",
+                overflow: "hidden",
+                border: "1px solid var(--line)",
+                background: "var(--paper-100)",
+              }}
+            >
+              <iframe
+                src={project.live_url}
+                style={{ width: "100%", height: "50rem", border: "none", display: "block" }}
+                title={`${project.title} live preview`}
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+              />
+            </div>
+            <p style={{ fontSize: "0.85rem", color: "var(--slate)", marginTop: "0.75rem" }}>
+              The live website is embedded above. If it doesn&apos;t load due to security restrictions,
+              <a href={project.live_url} target="_blank" rel="noreferrer" style={{ color: "var(--blue)", textDecoration: "underline" }}>
+                open it in a new tab
+              </a>.
+            </p>
+          </div>
+        </RevealOnScroll>
+      )}
 
       {/* Thumbnails */}
       {allImages.length > 1 && (
@@ -291,25 +341,28 @@ export default function ProjectCaseDetail({ project, related, backHref, backLabe
               Related {backLabel === "Work" ? "Projects" : "Systems"}
             </h2>
             <div className="project-stack" style={{ marginTop: "1.5rem" }}>
-              {related.map((rp, i) => (
-                <RevealOnScroll key={rp.id} delay={Math.min(i * 80, 240)}>
-                  <Link href={`/work/${rp.slug}`} className="project-panel" aria-label={`Open ${rp.title}`}>
-                    <div className="project-index">{String(i + 1).padStart(2, "0")}</div>
-                    <div className="project-visual">
-                      {rp.cover_image ? (
-                        <img src={rp.cover_image} alt={rp.title} loading="lazy" />
-                      ) : (
-                        <div style={{ width: "100%", height: "100%", minHeight: "12rem", background: "linear-gradient(135deg, rgba(19,99,223,0.15), rgba(78,151,255,0.08))" }} />
-                      )}
-                    </div>
-                    <div className="project-copy">
-                      <span className="project-tag">{categoryLabels[rp.category] || rp.category}</span>
-                      <h3>{rp.title}</h3>
-                      {rp.short_description && <p>{rp.short_description}</p>}
-                    </div>
-                  </Link>
-                </RevealOnScroll>
-              ))}
+              {related.map((rp, i) => {
+                const rpPreview = rp.website_preview_url || rp.cover_image;
+                return (
+                  <RevealOnScroll key={rp.id} delay={Math.min(i * 80, 240)}>
+                    <Link href={`/work/${rp.slug}`} className="project-panel" aria-label={`Open ${rp.title}`}>
+                      <div className="project-index">{String(i + 1).padStart(2, "0")}</div>
+                      <div className="project-visual">
+                        {rpPreview ? (
+                          <img src={rpPreview} alt={rp.title} loading="lazy" />
+                        ) : (
+                          <div style={{ width: "100%", height: "100%", minHeight: "12rem", background: "linear-gradient(135deg, rgba(19,99,223,0.15), rgba(78,151,255,0.08))" }} />
+                        )}
+                      </div>
+                      <div className="project-copy">
+                        <span className="project-tag">{categoryLabels[rp.category] || rp.category}</span>
+                        <h3>{rp.title}</h3>
+                        {rp.short_description && <p>{rp.short_description}</p>}
+                      </div>
+                    </Link>
+                  </RevealOnScroll>
+                );
+              })}
             </div>
           </div>
         </RevealOnScroll>

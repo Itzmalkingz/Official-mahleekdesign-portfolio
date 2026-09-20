@@ -16,6 +16,9 @@ export interface ProjectImage {
   sort_order: number;
 }
 
+export type PreviewStatus = "not_generated" | "generating" | "ready" | "failed" | "manual";
+export type PreviewViewport = "desktop" | "mobile";
+
 export interface Project {
   id: string;
   title: string;
@@ -47,6 +50,13 @@ export interface Project {
   archived?: boolean;
   canonical_url?: string | null;
   year?: string | null;
+  website_preview_url?: string;
+  website_preview_status?: PreviewStatus;
+  website_preview_generated_at?: string | null;
+  website_preview_viewport?: PreviewViewport;
+  website_preview_width?: number | null;
+  website_preview_height?: number | null;
+  website_preview_engine?: string | null;
 }
 
 export interface Testimonial {

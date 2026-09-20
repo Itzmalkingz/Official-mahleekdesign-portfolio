@@ -15,9 +15,11 @@
     "@supabase/supabase-js": "^2.116.0",
     "framer-motion": "^12.7.4",
     "next": "^16.3.4",
+    "playwright": "^1.47.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-hot-toast": "^2.5.2"
+    "react-hot-toast": "^2.5.2",
+    "sharp": "^0.33.5"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^15.3.3",

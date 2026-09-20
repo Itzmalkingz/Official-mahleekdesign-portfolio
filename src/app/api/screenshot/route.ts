@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
 import { supabaseUrl, supabaseAnonKey } from "@/lib/supabase/env";
+import { getAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 function isPrivateHost(host: string) {
   return (
@@ -31,24 +30,94 @@ async function verifyAuth(request: NextRequest): Promise<boolean> {
     );
     const { data: { user } } = await supabase.auth.getUser();
     if (user) return true;
-    // Allow in dev if no session but allowlist via header
     const hasCookie = request.cookies.getAll().some((c) => c.name.includes("sb-"));
-    if (!hasCookie) return true; // permissive for local dev
+    if (!hasCookie) return true;
     return !!user;
   } catch {
     return true;
   }
 }
 
+async function uploadToSupabaseStorage(buffer: Buffer, projectId: string, ext: string = "webp"): Promise<string> {
+  const admin = getAdminClient();
+  if (!admin) {
+    throw new Error("Service role key not configured — cannot upload to Supabase Storage");
+  }
+
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).slice(2, 8);
+  const path = `project-previews/${projectId}/website-preview-${timestamp}-${random}.${ext}`;
+
+  const { error } = await admin.storage
+    .from("design-uploads")
+    .upload(path, buffer, {
+      upsert: false,
+      contentType: `image/${ext}`,
+      cacheControl: "31536000",
+    });
+
+  if (error) throw error;
+
+  const { data } = admin.storage.from("design-uploads").getPublicUrl(path);
+  return data.publicUrl;
+}
+
+async function deleteOldPreview(projectId: string): Promise<void> {
+  const admin = getAdminClient();
+  if (!admin) return;
+
+  const { data: files } = await admin.storage
+    .from("design-uploads")
+    .list(`project-previews/${projectId}`, { limit: 100 });
+
+  if (files && files.length > 0) {
+    const paths = files.map((f) => `project-previews/${projectId}/${f.name}`);
+    await admin.storage.from("design-uploads").remove(paths);
+  }
+}
+
+async function updateProjectPreview(
+  projectId: string,
+  updates: {
+    website_preview_url?: string;
+    website_preview_status: "not_generated" | "generating" | "ready" | "failed" | "manual";
+    website_preview_generated_at?: string | null;
+    website_preview_viewport?: "desktop" | "mobile";
+    website_preview_width?: number;
+    website_preview_height?: number;
+    website_preview_engine?: string;
+  }
+): Promise<void> {
+  const admin = getAdminClient();
+  if (!admin) {
+    throw new Error("Service role key not configured — cannot update project");
+  }
+
+  const { error } = await admin
+    .from("projects")
+    .update(updates)
+    .eq("id", projectId);
+
+  if (error) throw error;
+}
+
 export async function POST(request: NextRequest) {
   const authed = await verifyAuth(request);
   if (!authed) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  let body: { url?: string; fullPage?: boolean; width?: number; height?: number };
+  let body: {
+    url?: string;
+    projectId?: string;
+    fullPage?: boolean;
+    width?: number;
+    height?: number;
+    viewport?: "desktop" | "mobile";
+  };
   try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
   const rawUrl = body.url?.trim();
   if (!rawUrl) return NextResponse.json({ error: "url is required" }, { status: 400 });
+  // projectId is optional - if not provided, we just return the screenshot URL without saving to DB
 
   let parsed: URL;
   try {
@@ -60,21 +129,30 @@ export async function POST(request: NextRequest) {
   }
 
   const targetUrl = parsed.toString();
-  const width = Math.min(Math.max(body.width || 1280, 320), 1920);
-  const height = Math.min(Math.max(body.height || 800, 400), 1200);
+  const viewport = body.viewport || "desktop";
+  const width = viewport === "mobile" ? 390 : Math.min(Math.max(body.width || 1280, 320), 1920);
+  const height = viewport === "mobile" ? 844 : Math.min(Math.max(body.height || 800, 400), 1200);
 
-  // Try Playwright first (headless Chromium). Fallback to external thumbnail if not available.
+  // If projectId provided, mark project as generating
+  if (body.projectId) {
+    try {
+      await updateProjectPreview(body.projectId, {
+        website_preview_status: "generating",
+        website_preview_viewport: viewport,
+        website_preview_width: width,
+        website_preview_height: height,
+      });
+    } catch (e) {
+      console.warn("Could not mark project as generating:", e);
+    }
+  }
+
   let buffer: Buffer | null = null;
   let used: "playwright" | "fallback" = "fallback";
 
   try {
-    // Dynamic import so build doesn't fail if playwright not installed
-    // Use eval to prevent webpack from trying to resolve at build time
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let pw: any = null;
     try {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore - optional peer, may not be installed
       pw = await eval('import("playwright")').catch(() => null);
     } catch {
       pw = null;
@@ -87,13 +165,14 @@ export async function POST(request: NextRequest) {
       });
       const ctx = await browser.newContext({
         viewport: { width, height },
-        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        deviceScaleFactor: 1.5,
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        deviceScaleFactor: viewport === "mobile" ? 2 : 1.5,
+        isMobile: viewport === "mobile",
+        hasTouch: viewport === "mobile",
       });
       const page = await ctx.newPage();
-      await page.goto(targetUrl, { waitUntil: "domcontentloaded", timeout: 15000 });
-      await page.waitForTimeout(1200);
-      // Hide cookie banners a bit
+      await page.goto(targetUrl, { waitUntil: "domcontentloaded", timeout: 20000 });
+      await page.waitForTimeout(1500);
       try { await page.evaluate(() => window.scrollTo(0, 0)); } catch {}
       const screenshot = await page.screenshot({ fullPage: body.fullPage !== false, type: "png" });
       buffer = Buffer.from(screenshot);
@@ -105,12 +184,11 @@ export async function POST(request: NextRequest) {
     buffer = null;
   }
 
-  // Fallback: use WordPress mShots (no key, public) — then fetch image and store locally
   if (!buffer) {
     const fallbackUrl = `https://s0.wp.com/mshots/v1/${encodeURIComponent(targetUrl)}?w=${width}&h=${height}`;
     try {
       const controller = new AbortController();
-      const t = setTimeout(() => controller.abort(), 12000);
+      const t = setTimeout(() => controller.abort(), 15000);
       const res = await fetch(fallbackUrl, { signal: controller.signal, headers: { "User-Agent": "MahleekPortfolioBot/1.0" } });
       clearTimeout(t);
       if (!res.ok) throw new Error(`fallback status ${res.status}`);
@@ -120,33 +198,95 @@ export async function POST(request: NextRequest) {
       used = "fallback";
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
-      return NextResponse.json({ error: `Screenshot failed: ${msg}. Install Playwright for higher quality: npm i -D playwright && npx playwright install chromium` }, { status: 502 });
+      if (body.projectId) {
+        await updateProjectPreview(body.projectId, {
+          website_preview_status: "failed",
+          website_preview_engine: "fallback",
+        });
+      }
+      return NextResponse.json(
+        { error: `Screenshot failed: ${msg}. Install Playwright for higher quality: npm i -D playwright && npx playwright install chromium` },
+        { status: 502 }
+      );
     }
   }
 
-  if (!buffer) return NextResponse.json({ error: "Could not capture screenshot" }, { status: 502 });
+  if (!buffer) {
+    if (body.projectId) {
+      await updateProjectPreview(body.projectId, { website_preview_status: "failed" });
+    }
+    return NextResponse.json({ error: "Could not capture screenshot" }, { status: 502 });
+  }
 
-  // Save to public/screenshots locally (as requested)
+  // Convert to WebP for optimization
+  let finalBuffer = buffer;
+  let finalExt = "webp";
   try {
-    const dir = path.join(process.cwd(), "public", "screenshots");
-    await mkdir(dir, { recursive: true });
-    const safeHost = parsed.hostname.replace(/[^a-z0-9.-]/gi, "-").slice(0, 40);
-    const fileName = `${Date.now()}-${safeHost}-${Math.random().toString(36).slice(2, 6)}.png`;
-    const absPath = path.join(dir, fileName);
-    await writeFile(absPath, buffer);
-    const publicUrl = `/screenshots/${fileName}`;
+    const sharp = await eval('import("sharp")').catch(() => null);
+    if (sharp && sharp.default) {
+      finalBuffer = await sharp.default(buffer).webp({ quality: 85, effort: 4 }).toBuffer();
+      finalExt = "webp";
+    }
+  } catch {
+    // sharp not available, use PNG
+    finalExt = "png";
+  }
+
+  try {
+    let publicUrl: string;
+
+    if (body.projectId) {
+      // Delete old preview first
+      await deleteOldPreview(body.projectId);
+
+      // Upload new preview to project folder
+      publicUrl = await uploadToSupabaseStorage(finalBuffer, body.projectId, finalExt);
+
+      // Update project with new preview
+      await updateProjectPreview(body.projectId, {
+        website_preview_url: publicUrl,
+        website_preview_status: "ready",
+        website_preview_generated_at: new Date().toISOString(),
+        website_preview_engine: used,
+      });
+    } else {
+      // For import flow (no projectId), upload to temp folder
+      const tempPath = `temp/import-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${finalExt}`;
+      const admin = getAdminClient();
+      if (admin) {
+        const { error } = await admin.storage
+          .from("design-uploads")
+          .upload(tempPath, finalBuffer, {
+            upsert: false,
+            contentType: `image/${finalExt}`,
+            cacheControl: "31536000",
+          });
+        if (error) throw error;
+        const { data } = admin.storage.from("design-uploads").getPublicUrl(tempPath);
+        publicUrl = data.publicUrl;
+      } else {
+        // Fallback: return base64 data URL (not ideal but works for preview)
+        publicUrl = `data:image/${finalExt};base64,${finalBuffer.toString("base64")}`;
+      }
+    }
 
     return NextResponse.json({
       url: targetUrl,
-      publicUrl,
-      fileName,
+      previewUrl: publicUrl,
       width,
       height,
       engine: used,
-      sizeBytes: buffer.byteLength,
+      sizeBytes: finalBuffer.byteLength,
+      viewport,
     });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
+    if (body.projectId) {
+      await updateProjectPreview(body.projectId, {
+        website_preview_status: "failed",
+        website_preview_engine: used,
+      });
+    }
     return NextResponse.json({ error: `Failed to save screenshot: ${msg}` }, { status: 500 });
   }
 }

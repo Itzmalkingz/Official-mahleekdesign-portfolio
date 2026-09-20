@@ -938,6 +938,42 @@
   .ash-topbar { padding: 0 1rem; }
   .ash-page-title { font-size: 1.25rem; }
   .ac-search input { width: 100%; }
+
+  /* Form responsive */
+  .ac-field-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ac-card-head {
+    padding: 0.85rem 1rem;
+    font-size: 0.82rem;
+  }
+
+  .ac-card-pad {
+    padding: 1rem;
+  }
+
+  .ac-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .ac-btn.sm {
+    padding: 0.25rem 0.55rem;
+    font-size: 0.74rem;
+  }
+
+  /* Type selector buttons stack on mobile */
+  .ac-type-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Toggle on mobile */
+  .ac-toggle-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
