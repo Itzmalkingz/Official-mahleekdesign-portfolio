@@ -1,15 +1,45 @@
-import type { MetadataRoute } from "next";
+import { MetadataRoute } from 'next';
+import { getAdminClient } from '@/lib/supabase/admin';
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://mahleek.design";
-  const now = new Date();
-  const routes = [
-    "", "/about", "/contact", "/brand-identity", "/web-systems", "/work"
-  ].map((p) => ({
-    url: `${base}${p || "/"}`,
-    lastModified: now,
-    changeFrequency: "weekly" as const,
-    priority: p === "" ? 1 : 0.8,
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = 'https://mahleekdesign.vercel.app';
+  const adminClient = getAdminClient();
+
+  // Static routes
+  const routes: MetadataRoute.Sitemap = [
+    '',
+    '/about',
+    '/brand-identity',
+    '/contact',
+    '/gallery',
+    '/web-projects',
+    '/web-systems',
+    '/work',
+  ].map((route) => ({
+    url: `${baseUrl}${route}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.8,
   }));
+
+  // Dynamic projects
+  if (adminClient) {
+    const { data: projects } = await adminClient
+      .from('projects')
+      .select('slug, created_at')
+      .eq('published', true);
+
+    if (projects) {
+      projects.forEach((project) => {
+        routes.push({
+          url: `${baseUrl}/work/${project.slug}`,
+          lastModified: new Date(project.created_at),
+          changeFrequency: 'monthly' as const,
+          priority: 0.6,
+        });
+      });
+    }
+  }
+
   return routes;
 }

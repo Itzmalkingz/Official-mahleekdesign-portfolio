@@ -1,15 +1,12 @@
-import type { MetadataRoute } from "next";
+import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://mahleek.design";
   return {
-    rules: [
-      {
-        userAgent: "*",
-        allow: "/",
-        disallow: ["/admin/", "/api/"],
-      },
-    ],
-    sitemap: `${base}/sitemap.xml`,
+    rules: {
+      userAgent: '*',
+      allow: '/',
+      disallow: ['/admin', '/api/'],
+    },
+    sitemap: 'https://mahleekdesign.vercel.app/sitemap.xml',
   };
 }
