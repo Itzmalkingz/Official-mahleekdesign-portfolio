@@ -7,6 +7,7 @@ import type { Project } from "@/lib/types";
 import RevealOnScroll from "@/components/ui/RevealOnScroll";
 import ScrollProgress from "@/components/ui/ScrollProgress";
 import Parallax from "@/components/ui/Parallax";
+import BrandManifesto from "@/components/ui/BrandManifesto";
 
 export default function HomePage() {
   const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
@@ -396,14 +397,17 @@ export default function HomePage() {
             </article>
           </div>
         </RevealOnScroll>
-        <RevealOnScroll delay={180}>
-          <p className="system-types-cta">
-            <strong>If your problem doesn't fit inside a normal website, we can build the system around it.</strong>
-          </p>
-        </RevealOnScroll>
-      </section>
+<RevealOnScroll delay={180}>
+            <p className="system-types-cta">
+              <strong>If your problem doesn't fit inside a normal website, we can build the system around it.</strong>
+            </p>
+          </RevealOnScroll>
+        </section>
 
-      {/* Brand Identity Section */}
+        {/* Brand Manifesto — the core promise */}
+        <BrandManifesto />
+
+        {/* Brand Identity Section */}
       <section className="section-padding brand-section">
         <RevealOnScroll>
           <p className="section-kicker">Brand Identity</p>
