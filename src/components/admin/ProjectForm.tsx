@@ -6,11 +6,10 @@ import { supabase } from "@/lib/supabase/client";
 import toast from "react-hot-toast";
 import type { Project, ProjectCategory } from "@/lib/types";
 import { Field } from "./ui";
-import ImageField from "./ImageField";
-import GalleryManager from "./GalleryManager";
+import ImageUploadManager, { type PendingImage } from "./ImageUploadManager";
 import WebsitePreview from "./WebsitePreview";
 import FeaturesEditor from "./FeaturesEditor";
-import { IconRefresh, IconCheck, IconChevronDown } from "./icons";
+import { IconCheck, IconChevronDown } from "./icons";
 
 const slugify = (s: string) =>
   s
@@ -149,9 +148,11 @@ export default function ProjectForm({ initial, mode = "create" }: Props) {
   const [industry, setIndustry] = useState(initial?.industry ?? "");
   const [shortDescription, setShortDescription] = useState(initial?.short_description ?? "");
   const [liveUrl, setLiveUrl] = useState(initial?.live_url ?? "");
-  const [coverImage, setCoverImage] = useState(initial?.cover_image ?? "");
-  const [images, setImages] = useState(
-    initial?.images?.map((i) => ({ ...i })) ?? []
+  const [cover, setCover] = useState<PendingImage | null>(
+    initial?.cover_image ? { url: initial.cover_image } : null
+  );
+  const [gallery, setGallery] = useState<PendingImage[]>(
+    (initial?.images ?? []).map((i) => ({ url: i.image_url, altText: i.alt_text }))
   );
   const [published, setPublished] = useState(initial?.published ?? false);
   const [featured, setFeatured] = useState(initial?.featured ?? false);
@@ -196,6 +197,17 @@ export default function ProjectForm({ initial, mode = "create" }: Props) {
     return "";
   }, [metaDescription, shortDescription, title]);
 
+  const uploadToStorage = async (file: File, folder: string): Promise<string> => {
+    const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+    const path = `admin/${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage
+      .from("design-uploads")
+      .upload(path, file, { upsert: false, contentType: file.type });
+    if (error) throw error;
+    const { data } = supabase.storage.from("design-uploads").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
   const handleTitleBlur = useCallback(() => {
     if (!slug.trim() && title.trim()) {
       setSlug(slugify(title));
@@ -233,6 +245,40 @@ export default function ProjectForm({ initial, mode = "create" }: Props) {
       data: { user },
     } = await supabase.auth.getUser();
 
+    let coverUrl: string | null = null;
+    const galleryUrls: { image_url: string; alt_text: string; sort_order: number }[] = [];
+
+    try {
+      if (cover?.file) {
+        coverUrl = await uploadToStorage(cover.file, "projects/cover");
+      } else if (cover?.url) {
+        coverUrl = cover.url;
+      }
+
+      for (let i = 0; i < gallery.length; i++) {
+        const item = gallery[i];
+        if (!item) continue;
+        let url: string;
+        if (item.file) {
+          url = await uploadToStorage(item.file, "projects");
+        } else if (item.url) {
+          url = item.url;
+        } else {
+          continue;
+        }
+        galleryUrls.push({
+          image_url: url,
+          alt_text: item.altText ?? "",
+          sort_order: i,
+        });
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Upload failed";
+      toast.error(msg.includes("bucket") ? "Storage bucket not ready — run the Phase 1 migration." : msg);
+      setBusy(false);
+      return;
+    }
+
     const payload: Record<string, unknown> = {
       title: title.trim(),
       slug: slug.trim(),
@@ -245,14 +291,8 @@ export default function ProjectForm({ initial, mode = "create" }: Props) {
       thinking: thinking.trim() || null,
       solution: solution.trim() || null,
       outcome: outcome.trim() || null,
-      cover_image: coverImage.trim(),
-      images: images
-        .filter((i) => i.image_url.trim())
-        .map((i, idx) => ({
-          image_url: i.image_url.trim(),
-          alt_text: i.alt_text || "",
-          sort_order: idx,
-        })),
+      cover_image: coverUrl ?? "",
+      images: galleryUrls,
       live_url: liveUrl.trim() || null,
       github_url: githubUrl.trim() || null,
       meta_title: autoSeoTitle.trim() || null,
@@ -443,10 +483,6 @@ export default function ProjectForm({ initial, mode = "create" }: Props) {
             />
           </Field>
 
-          <Field label="Cover image">
-            <ImageField value={coverImage} onChange={setCoverImage} folder="projects/cover" />
-          </Field>
-
           <div className="ac-toggle-row" style={{ display: "flex", gap: "2rem", flexWrap: "wrap", alignItems: "center" }}>
             <Toggle checked={published} onChange={setPublished} label="Published" />
             <Toggle checked={featured} onChange={setFeatured} label="Featured (homepage)" />
@@ -463,15 +499,15 @@ export default function ProjectForm({ initial, mode = "create" }: Props) {
         </div>
       </section>
 
-      {/* ── Media Gallery ────────────────────────────────────────── */}
+      {/* ── Media Gallery (cover-first) ────────────── */}
       <section className="ac-card">
         <div className="ac-card-head">Media — Gallery</div>
         <div className="ac-card-pad">
-          <GalleryManager images={images} onChange={setImages} folder="projects" />
+          <ImageUploadManager cover={cover} gallery={gallery} onCoverChange={setCover} onGalleryChange={setGallery} />
         </div>
       </section>
 
-      {/* ── Website Preview (Web System / Brand + Web) ───────────── */}
+      {/* ── Website Preview (Web System / Brand + Web) ───── */}
       {(category === "web-systems" || category === "brand-web") && (
         <WebsitePreview
           project={projectForPreview}
