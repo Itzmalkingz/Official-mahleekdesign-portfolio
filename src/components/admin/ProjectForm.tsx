@@ -201,12 +201,16 @@ export default function ProjectForm({ initial, mode = "create" }: Props) {
   const uploadToStorage = async (file: File, folder: string): Promise<string> => {
     const ext = file.name.split(".").pop()?.toLowerCase() || "png";
     const path = `admin/${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
-    const url = await uploadAndGetUrl("design-uploads", path, file, {
-      contentType: file.type,
-      cacheControl: "31536000",
-    });
-    if (!url) throw new Error("Failed to upload file and generate URL");
-    return url;
+    try {
+      return await uploadAndGetUrl("design-uploads", path, file, {
+        contentType: file.type,
+        cacheControl: "31536000",
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      toast.error(`Upload failed: ${msg}`);
+      throw err;
+    }
   };
 
   const handleTitleBlur = useCallback(() => {

@@ -106,8 +106,8 @@ export async function uploadAndGetUrl(
   path: string,
   file: File | Buffer,
   options?: { contentType?: string; cacheControl?: string; upsert?: boolean }
-): Promise<string | null> {
-  const { error: uploadError } = await supabase.storage.from(bucket).upload(path, file, {
+): Promise<string> {
+  const { error: uploadError, data: uploadData } = await supabase.storage.from(bucket).upload(path, file, {
     upsert: options?.upsert ?? false,
     contentType: options?.contentType,
     cacheControl: options?.cacheControl,
@@ -115,8 +115,10 @@ export async function uploadAndGetUrl(
   
   if (uploadError) {
     console.error(`Upload failed for ${bucket}/${path}:`, uploadError);
-    return null;
+    throw new Error(`Upload failed: ${uploadError.message}`);
   }
+  
+  console.log(`Upload successful:`, uploadData);
   
   // Try public URL first
   const { data: publicData } = supabase.storage.from(bucket).getPublicUrl(path);
@@ -126,11 +128,14 @@ export async function uploadAndGetUrl(
     try {
       const response = await fetch(publicUrl, { method: "HEAD" });
       if (response.ok) return publicUrl;
-    } catch {
-      // Fall through to signed URL
+      console.warn(`Public URL returned ${response.status}, falling back to signed URL`);
+    } catch (e) {
+      console.warn(`Public URL check failed:`, e);
     }
   }
   
   // Fall back to signed URL
-  return createSignedUrl(bucket, path);
+  const signedUrl = await createSignedUrl(bucket, path);
+  if (!signedUrl) throw new Error("Failed to create signed URL");
+  return signedUrl;
 }
