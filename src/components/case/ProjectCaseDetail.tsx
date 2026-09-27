@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import type { Project } from "@/lib/types";
 import RevealOnScroll from "@/components/ui/RevealOnScroll";
+import SafeImage from "@/components/ui/SafeImage";
 
 const categoryLabels: Record<string, string> = {
   "brand-identity": "Brand Identity",
@@ -118,22 +119,25 @@ export default function ProjectCaseDetail({ project, related, backHref, backLabe
           }}
         >
           {heroImage ? (
-            <img
+            <SafeImage
               src={heroImage}
               alt={project.title}
               style={{ width: "100%", maxHeight: "42rem", objectFit: "contain", display: "block" }}
+              fallback={project.title[0]}
             />
           ) : allImages.length > 0 ? (
-            <img
+            <SafeImage
               src={allImages[activeImage]}
               alt={`${project.title} preview`}
               style={{ width: "100%", maxHeight: "42rem", objectFit: "contain", display: "block" }}
+              fallback={project.title[0]}
             />
           ) : project.cover_image ? (
-            <img
+            <SafeImage
               src={project.cover_image}
               alt={project.title}
               style={{ width: "100%", maxHeight: "42rem", objectFit: "contain", display: "block" }}
+              fallback={project.title[0]}
             />
           ) : (
             <div
@@ -218,7 +222,7 @@ export default function ProjectCaseDetail({ project, related, backHref, backLabe
                   background: "var(--paper-100)",
                 }}
               >
-                <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <SafeImage src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </button>
             ))}
           </div>
@@ -349,7 +353,7 @@ export default function ProjectCaseDetail({ project, related, backHref, backLabe
                       <div className="project-index">{String(i + 1).padStart(2, "0")}</div>
                       <div className="project-visual">
                         {rpPreview ? (
-                          <img src={rpPreview} alt={rp.title} loading="lazy" />
+                          <SafeImage src={rpPreview} alt={rp.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         ) : (
                           <div style={{ width: "100%", height: "100%", minHeight: "12rem", background: "linear-gradient(135deg, rgba(19,99,223,0.15), rgba(78,151,255,0.08))" }} />
                         )}

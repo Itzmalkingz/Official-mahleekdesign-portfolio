@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef, useCallback, useEffect } from "react";
+import { useRef, useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { IconPlus, IconUpload } from "./icons";
 
 export interface PendingImage {
   file?: File;
   url?: string;
+  preview?: string;
   altText?: string;
 }
 
@@ -19,7 +20,7 @@ function validateFile(file: File): string | null {
     return "Only JPEG, PNG, WebP, or GIF images are allowed.";
   }
   if (file.size > MAX_FILE_SIZE) {
-    return `${file.name} exceeds the 10 MB limit.`;
+    return file.name + " exceeds the 10 MB limit.";
   }
   return null;
 }
@@ -42,11 +43,18 @@ export default function ImageUploadManager({
 }) {
   const coverInputRef = useRef<HTMLInputElement>(null);
   const moreInputRef = useRef<HTMLInputElement>(null);
+  const [objectUrls, setObjectUrls] = useState<string[]>([]);
 
   useEffect(() => {
     return () => {
-      // Revoke any object URLs that are still valid (best-effort cleanup)
+      objectUrls.forEach((url) => URL.revokeObjectURL(url));
     };
+  }, [objectUrls]);
+
+  const createObjectUrl = useCallback((file: File) => {
+    const url = URL.createObjectURL(file);
+    setObjectUrls((prev) => [...prev, url]);
+    return url;
   }, []);
 
   const addCover = useCallback(
@@ -57,11 +65,11 @@ export default function ImageUploadManager({
           toast.error(err);
           continue;
         }
-        onCoverChange({ file, altText: "" });
+        onCoverChange({ file, altText: "", preview: createObjectUrl(file) });
         break;
       }
     },
-    [onCoverChange]
+    [onCoverChange, createObjectUrl]
   );
 
   const addMore = useCallback(
@@ -73,11 +81,11 @@ export default function ImageUploadManager({
           toast.error(err);
           continue;
         }
-        valid.push({ file, altText: "" });
+        valid.push({ file, altText: "", preview: createObjectUrl(file) });
       }
       if (valid.length) onGalleryChange([...gallery, ...valid]);
     },
-    [gallery, onGalleryChange]
+    [gallery, onGalleryChange, createObjectUrl]
   );
 
   const removeGallery = (index: number) => {
@@ -103,11 +111,11 @@ export default function ImageUploadManager({
     onGalleryChange(gallery.map((g, i) => (i === index ? { ...g, altText: alt } : g)));
   };
 
-  const coverPreview = cover ? previewFor(cover) : "";
+  const coverPreview = cover?.preview || (cover ? previewFor(cover) : "");
 
   return (
     <div style={{ display: "grid", gap: "1.25rem" }}>
-      {/* ── Cover ── */}
+      {/* Cover */}
       <div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
           <label className="ac-label" style={{ marginBottom: 0 }}>
@@ -190,14 +198,14 @@ export default function ImageUploadManager({
         />
       </div>
 
-      {/* ── Additional designs ── */}
+      {/* Additional designs */}
       <div>
         <label className="ac-label">Additional designs</label>
 
         {gallery.length > 0 && (
           <div style={{ display: "flex", gap: "0.85rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
             {gallery.map((item, i) => {
-              const src = previewFor(item);
+              const src = item.preview || previewFor(item);
               return (
                 <div
                   key={i}
@@ -233,7 +241,7 @@ export default function ImageUploadManager({
                         lineHeight: 1,
                       }}
                     >
-                      ×
+                      &times;
                     </button>
                   </div>
                   <input

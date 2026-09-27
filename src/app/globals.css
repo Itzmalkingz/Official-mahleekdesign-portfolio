@@ -1079,49 +1079,50 @@ button, a { font: inherit; }
 }
 
 @media (max-width: 640px) {
-  .site-header {
-    top: 0.55rem; left: 0.75rem; right: 0.75rem;
-    grid-template-columns: auto 2.75rem minmax(0, auto);
-    gap: 0.55rem; padding: 0.5rem;
+    .site-header {
+      top: 0.55rem; left: 0.75rem; right: 0.75rem;
+      grid-template-columns: auto 2.75rem minmax(0, auto);
+      gap: 0.55rem; padding: 0.5rem;
+    }
+    .header-cta {
+      min-height: 2.25rem; padding: 0 0.7rem;
+      font-size: 0.58rem; min-width: 0; white-space: nowrap;
+    }
+    .brand-mark { width: 2.25rem; height: 2.25rem; }
+    .hero-section {
+      min-height: auto; padding: 6.2rem 0.85rem 3rem; gap: 1.6rem;
+    }
+    .hero-content h1 { font-size: clamp(2.3rem, 11vw, 3.6rem); max-width: 11ch; }
+    .hero-metrics { grid-template-columns: 1fr; margin-top: 1.4rem; }
+    .hero-actions { margin-top: 1.6rem; }
+    .btn-primary, .btn-ghost { width: 100%; min-height: 3rem; }
+    .hero-showpiece { min-height: auto; padding: 0.8rem; border-radius: 1.15rem; }
+    .hero-portrait { aspect-ratio: 1/1.08; border-radius: 0.8rem; }
+    .scroll-cue { display: none; }
+    .section-padding { padding: 4.5rem 0.85rem; }
+    .project-stack { grid-template-columns: 1fr; }
+    .project-panel {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+      min-height: auto;
+    }
+    .project-visual, .project-visual img { min-height: 17rem; }
+    .skills-grid { grid-template-columns: 1fr; }
+    .gallery-grid { grid-template-columns: 1fr; }
+    .lightbox-shell {
+      max-height: calc(100svh - 1rem);
+      padding: 3.8rem 0.75rem 0.75rem;
+      gap: 0.8rem; overflow-y: auto;
+    }
+    .lightbox-preview { min-height: 44svh; }
+    .lightbox-image-wrap { min-height: 44svh; }
+    .lightbox-preview img { max-height: 54svh; }
+    .lightbox-thumbs {
+      display: flex; gap: 0.55rem;
+      overflow-x: auto; scroll-snap-type: x proximity;
+    }
+    .lightbox-thumb { flex: 0 0 4.5rem; min-height: 4.5rem; scroll-snap-align: start; }
   }
-  .header-cta {
-    min-height: 2.25rem; padding: 0 0.7rem;
-    font-size: 0.58rem; min-width: 0; white-space: nowrap;
-  }
-  .brand-mark { width: 2.25rem; height: 2.25rem; }
-  .hero-section {
-    min-height: auto; padding: 6.2rem 0.85rem 3rem; gap: 1.6rem;
-  }
-  .hero-content h1 { font-size: clamp(2.3rem, 11vw, 3.6rem); max-width: 11ch; }
-  .hero-metrics { grid-template-columns: 1fr; margin-top: 1.4rem; }
-  .hero-actions { margin-top: 1.6rem; }
-  .btn-primary, .btn-ghost { width: 100%; min-height: 3rem; }
-  .hero-showpiece { min-height: auto; padding: 0.8rem; border-radius: 1.15rem; }
-  .hero-portrait { aspect-ratio: 1/1.08; border-radius: 0.8rem; }
-  .scroll-cue { display: none; }
-  .section-padding { padding: 4.5rem 0.85rem; }
-  .project-stack { grid-template-columns: 1fr; }
-  .project-panel {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
-    min-height: auto;
-  }
-  .project-visual, .project-visual img { min-height: 20rem; }
-  .skills-grid { grid-template-columns: 1fr; }
-  .gallery-grid { grid-template-columns: 1fr; }
-  .lightbox-shell {
-    max-height: calc(100svh - 1rem);
-    padding: 3.8rem 0.75rem 0.75rem;
-    gap: 0.8rem; overflow-y: auto;
-  }
-  .lightbox-preview { min-height: 44svh; }
-  .lightbox-image-wrap { min-height: 44svh; }
-  .lightbox-preview img { max-height: 54svh; }
-  .lightbox-thumbs {
-    display: flex; gap: 0.55rem;
-    overflow-x: auto; scroll-snap-type: x proximity;
-  }
-  .lightbox-thumb { flex: 0 0 4.5rem; min-height: 4.5rem; scroll-snap-align: start; }
-}
 
 @media (max-width: 380px) {
   .hero-content h1 { font-size: clamp(2.05rem, 10.8vw, 2.8rem); }
