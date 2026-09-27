@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { supabaseUrl, supabaseAnonKey } from "@/lib/supabase/env";
 import { getAdminClient } from "@/lib/supabase/admin";
+import { uploadAndGetUrlAdmin } from "@/lib/supabase/storage-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,18 +49,13 @@ async function uploadToSupabaseStorage(buffer: Buffer, projectId: string, ext: s
   const random = Math.random().toString(36).slice(2, 8);
   const path = `project-previews/${projectId}/website-preview-${timestamp}-${random}.${ext}`;
 
-  const { error } = await admin.storage
-    .from("design-uploads")
-    .upload(path, buffer, {
-      upsert: false,
-      contentType: `image/${ext}`,
-      cacheControl: "31536000",
-    });
-
-  if (error) throw error;
-
-  const { data } = admin.storage.from("design-uploads").getPublicUrl(path);
-  return data.publicUrl;
+  const url = await uploadAndGetUrlAdmin(admin, "design-uploads", path, buffer, {
+    contentType: `image/${ext}`,
+    cacheControl: "31536000",
+  });
+  
+  if (!url) throw new Error("Failed to upload file and generate URL");
+  return url;
 }
 
 async function deleteOldPreview(projectId: string): Promise<void> {

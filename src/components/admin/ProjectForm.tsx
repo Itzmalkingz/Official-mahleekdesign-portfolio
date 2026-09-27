@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { uploadAndGetUrl } from "@/lib/supabase/storage";
 import toast from "react-hot-toast";
 import type { Project, ProjectCategory } from "@/lib/types";
 import { Field } from "./ui";
@@ -200,12 +201,12 @@ export default function ProjectForm({ initial, mode = "create" }: Props) {
   const uploadToStorage = async (file: File, folder: string): Promise<string> => {
     const ext = file.name.split(".").pop()?.toLowerCase() || "png";
     const path = `admin/${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
-    const { error } = await supabase.storage
-      .from("design-uploads")
-      .upload(path, file, { upsert: false, contentType: file.type });
-    if (error) throw error;
-    const { data } = supabase.storage.from("design-uploads").getPublicUrl(path);
-    return data.publicUrl;
+    const url = await uploadAndGetUrl("design-uploads", path, file, {
+      contentType: file.type,
+      cacheControl: "31536000",
+    });
+    if (!url) throw new Error("Failed to upload file and generate URL");
+    return url;
   };
 
   const handleTitleBlur = useCallback(() => {

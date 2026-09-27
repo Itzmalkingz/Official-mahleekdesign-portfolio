@@ -2,9 +2,10 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/lib/supabase/client";
+import { uploadAndGetUrl } from "@/lib/supabase/storage";
 import toast from "react-hot-toast";
 import type { Project, PreviewStatus } from "@/lib/types";
-import { IconExternal, IconRefresh, IconUpload, IconTrash, IconCheck, IconAlert, IconLoader } from "./icons";
+import { IconExternal, IconRefresh, IconUpload, IconTrash, IconAlert, IconLoader } from "./icons";
 
 const statusLabels: Record<PreviewStatus, string> = {
   not_generated: "Not Generated",
@@ -133,13 +134,11 @@ export default function WebsitePreview({
     try {
       const ext = file.name.split(".").pop()?.toLowerCase() || "webp";
       const path = `project-previews/${project.id}/manual-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage
-        .from("design-uploads")
-        .upload(path, file, { upsert: false, contentType: file.type, cacheControl: "31536000" });
-      if (error) throw error;
-
-      const { data } = supabase.storage.from("design-uploads").getPublicUrl(path);
-      const url = data.publicUrl;
+      const url = await uploadAndGetUrl("design-uploads", path, file, {
+        contentType: file.type,
+        cacheControl: "31536000",
+      });
+      if (!url) throw new Error("Failed to upload file and generate URL");
 
       setPreviewUrl(url);
       onPreviewUpdate({
