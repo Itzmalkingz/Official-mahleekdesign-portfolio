@@ -397,11 +397,6 @@ export default function HomePage() {
             </article>
           </div>
         </RevealOnScroll>
-<RevealOnScroll delay={180}>
-            <p className="system-types-cta">
-              <strong>If your problem doesn't fit inside a normal website, we can build the system around it.</strong>
-            </p>
-          </RevealOnScroll>
         </section>
 
         {/* Brand Manifesto — the core promise */}
