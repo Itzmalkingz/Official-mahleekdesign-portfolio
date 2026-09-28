@@ -1,10 +1,5 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { supabaseUrl, supabaseAnonKey } from "./env";
-
-/**
- * Client-side Supabase client (uses anon key, respects RLS)
- */
-export const supabase = createClient(supabaseUrl(), supabaseAnonKey());
+import { supabase } from "./client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
  * Generate a signed URL for a storage object.
