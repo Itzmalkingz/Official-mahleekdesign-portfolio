@@ -2,8 +2,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
-import { uploadAndGetUrl } from "@/lib/supabase/storage";
+import { uploadFile } from "@/app/actions/upload";
 import toast from "react-hot-toast";
 import type { Project, ProjectCategory } from "@/lib/types";
 import { Field } from "./ui";
@@ -202,10 +201,12 @@ export default function ProjectForm({ initial, mode = "create" }: Props) {
     const ext = file.name.split(".").pop()?.toLowerCase() || "png";
     const path = `admin/${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
     try {
-      return await uploadAndGetUrl("design-uploads", path, file, {
-        contentType: file.type,
-        cacheControl: "31536000",
-      });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("path", path);
+      formData.append("contentType", file.type);
+      formData.append("cacheControl", "31536000");
+      return await uploadFile(formData);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       toast.error(`Upload failed: ${msg}`);

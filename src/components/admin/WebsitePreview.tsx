@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { supabase } from "@/lib/supabase/client";
-import { uploadAndGetUrl } from "@/lib/supabase/storage";
+import { uploadFile } from "@/app/actions/upload";
 import toast from "react-hot-toast";
 import type { Project, PreviewStatus } from "@/lib/types";
 import { IconExternal, IconRefresh, IconUpload, IconTrash, IconAlert, IconLoader } from "./icons";
@@ -134,11 +133,12 @@ export default function WebsitePreview({
     try {
       const ext = file.name.split(".").pop()?.toLowerCase() || "webp";
       const path = `project-previews/${project.id}/manual-${Date.now()}.${ext}`;
-      const url = await uploadAndGetUrl("design-uploads", path, file, {
-        contentType: file.type,
-        cacheControl: "31536000",
-      });
-      if (!url) throw new Error("Failed to upload file and generate URL");
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("path", path);
+      formData.append("contentType", file.type);
+      formData.append("cacheControl", "31536000");
+      const url = await uploadFile(formData);
 
       setPreviewUrl(url);
       onPreviewUpdate({
