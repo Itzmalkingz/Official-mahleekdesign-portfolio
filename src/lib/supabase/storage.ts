@@ -102,6 +102,9 @@ export async function uploadAndGetUrl(
   file: File | Buffer,
   options?: { contentType?: string; cacheControl?: string; upsert?: boolean }
 ): Promise<string> {
+  // Ensure session is loaded/refreshed before upload
+  await supabase.auth.getSession();
+
   const { error: uploadError, data: uploadData } = await supabase.storage.from(bucket).upload(path, file, {
     upsert: options?.upsert ?? false,
     contentType: options?.contentType,
