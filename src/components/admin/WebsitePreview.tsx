@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { uploadFile } from "@/app/actions/upload";
 import toast from "react-hot-toast";
 import type { Project, PreviewStatus } from "@/lib/types";
 import { IconExternal, IconRefresh, IconUpload, IconTrash, IconAlert, IconLoader } from "./icons";
@@ -131,18 +130,19 @@ export default function WebsitePreview({
     if (!project?.id) return toast.error("Project must be saved first");
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop()?.toLowerCase() || "webp";
-      const path = `project-previews/${project.id}/manual-${Date.now()}.${ext}`;
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("path", path);
-      formData.append("contentType", file.type);
-      formData.append("cacheControl", "31536000");
-      const url = await uploadFile(formData);
+      formData.append("folder", `project-previews/${project.id}`);
+      const res = await fetch("/api/media/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
 
-      setPreviewUrl(url);
+      setPreviewUrl(data.url);
       onPreviewUpdate({
-        website_preview_url: url,
+        website_preview_url: data.url,
         website_preview_status: "manual",
         website_preview_generated_at: new Date().toISOString(),
         website_preview_engine: "manual",
@@ -160,7 +160,9 @@ export default function WebsitePreview({
     if (!project?.id) return;
     if (!confirm("Remove this preview? The live URL will be kept.")) return;
     try {
-      await supabase.storage.from("design-uploads").remove([`project-previews/${project.id}`]);
+      await fetch(`/api/media/delete?path=project-previews/${project.id}`, {
+        method: "DELETE",
+      });
     } catch {}
     setPreviewUrl("");
     onPreviewUpdate({

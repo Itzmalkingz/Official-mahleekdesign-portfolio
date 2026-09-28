@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { uploadFile } from "@/app/actions/upload";
+import { saveProject } from "@/app/actions/projects";
 import toast from "react-hot-toast";
 import type { Project, ProjectCategory } from "@/lib/types";
 import { Field } from "./ui";
@@ -197,23 +197,6 @@ export default function ProjectForm({ initial, mode = "create" }: Props) {
     return "";
   }, [metaDescription, shortDescription, title]);
 
-  const uploadToStorage = async (file: File, folder: string): Promise<string> => {
-    const ext = file.name.split(".").pop()?.toLowerCase() || "png";
-    const path = `admin/${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("path", path);
-      formData.append("contentType", file.type);
-      formData.append("cacheControl", "31536000");
-      return await uploadFile(formData);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Unknown error";
-      toast.error(`Upload failed: ${msg}`);
-      throw err;
-    }
-  };
-
   const handleTitleBlur = useCallback(() => {
     if (!slug.trim() && title.trim()) {
       setSlug(slugify(title));
@@ -247,124 +230,63 @@ export default function ProjectForm({ initial, mode = "create" }: Props) {
     if (!slug.trim()) return toast.error("Slug is required");
 
     setBusy(true);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    let coverUrl: string | null = null;
-    const galleryUrls: { image_url: string; alt_text: string; sort_order: number }[] = [];
 
     try {
-      if (cover?.file) {
-        coverUrl = await uploadToStorage(cover.file, "projects/cover");
-      } else if (cover?.url) {
-        coverUrl = cover.url;
-      }
+      const result = await saveProject(
+        {
+          title,
+          slug,
+          category,
+          client: client.trim() || null,
+          industry: industry.trim() || null,
+          year: year.trim() || null,
+          shortDescription,
+          challenge: challenge.trim() || null,
+          thinking: thinking.trim() || null,
+          solution: solution.trim() || null,
+          outcome: outcome.trim() || null,
+          coverImage: cover?.file ?? cover?.url ?? null,
+          images: gallery.map((img, i) => ({
+            file: img.file,
+            url: img.url,
+            altText: img.altText,
+            sortOrder: i,
+          })),
+          liveUrl: liveUrl.trim() || null,
+          githubUrl: githubUrl.trim() || null,
+          metaTitle: autoSeoTitle.trim() || null,
+          metaDescription: autoSeoDesc.trim() || null,
+          ogImage: ogImage.trim() || null,
+          sortOrder: Number(sortOrder) || 0,
+          published,
+          featured,
+          tags: splitList(tags),
+          services: splitList(services),
+          technologies: splitList(technologies),
+          features: features
+            .filter((f) => f.name.trim())
+            .map((f) => ({ name: f.name.trim(), description: f.description || "" })),
+          websitePreviewUrl: websitePreviewUrl.trim() || null,
+          websitePreviewStatus: websitePreviewStatus,
+          websitePreviewGeneratedAt: websitePreviewGeneratedAt,
+          websitePreviewViewport: websitePreviewViewport,
+          websitePreviewWidth: websitePreviewWidth,
+          websitePreviewHeight: websitePreviewHeight,
+          websitePreviewEngine: websitePreviewEngine,
+        },
+        mode,
+        initial?.id
+      );
 
-      for (let i = 0; i < gallery.length; i++) {
-        const item = gallery[i];
-        if (!item) continue;
-        let url: string;
-        if (item.file) {
-          url = await uploadToStorage(item.file, "projects");
-        } else if (item.url) {
-          url = item.url;
-        } else {
-          continue;
-        }
-        galleryUrls.push({
-          image_url: url,
-          alt_text: item.altText ?? "",
-          sort_order: i,
-        });
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Upload failed";
-      toast.error(msg.includes("bucket") ? "Storage bucket not ready — run the Phase 1 migration." : msg);
-      setBusy(false);
-      return;
-    }
-
-    const payload: Record<string, unknown> = {
-      title: title.trim(),
-      slug: slug.trim(),
-      category,
-      client: client.trim() || null,
-      industry: industry.trim() || null,
-      year: year.trim() || null,
-      short_description: shortDescription.trim(),
-      challenge: challenge.trim() || null,
-      thinking: thinking.trim() || null,
-      solution: solution.trim() || null,
-      outcome: outcome.trim() || null,
-      cover_image: coverUrl ?? "",
-      images: galleryUrls,
-      live_url: liveUrl.trim() || null,
-      github_url: githubUrl.trim() || null,
-      meta_title: autoSeoTitle.trim() || null,
-      meta_description: autoSeoDesc.trim() || null,
-      og_image: ogImage.trim() || null,
-      sort_order: Number(sortOrder) || 0,
-      published,
-      featured,
-      tags: splitList(tags),
-      services: splitList(services),
-      technologies: splitList(technologies),
-      features: features
-        .filter((f) => f.name.trim())
-        .map((f, idx) => ({
-          name: f.name.trim(),
-          description: f.description || "",
-          sort_order: idx,
-        })),
-      website_preview_url: websitePreviewUrl.trim() || null,
-      website_preview_status: websitePreviewStatus,
-      website_preview_generated_at: websitePreviewGeneratedAt,
-      website_preview_viewport: websitePreviewViewport,
-      website_preview_width: websitePreviewWidth,
-      website_preview_height: websitePreviewHeight,
-      website_preview_engine: websitePreviewEngine,
-    };
-
-    let entityId = initial?.id ?? "";
-    try {
-      if (mode === "edit" && initial?.id) {
-        const { data, error } = await supabase
-          .from("projects")
-          .update(payload)
-          .eq("id", initial.id)
-          .select("id")
-          .single();
-        if (error) throw error;
-        entityId = data?.id ?? initial.id;
-      } else {
-        const { data, error } = await supabase
-          .from("projects")
-          .insert(payload)
-          .select("id")
-          .single();
-        if (error) throw error;
-        entityId = data?.id;
-      }
+      toast.success(mode === "edit" ? "Project updated" : "Project created");
+      router.push("/admin/projects");
+      router.refresh();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Could not save project";
       toast.error(msg);
+    } finally {
       setBusy(false);
-      return;
     }
-
-    await supabase.from("activity_logs").insert({
-      actor_id: user?.id,
-      actor_email: user?.email,
-      action: mode === "edit" ? "updated project" : "created project",
-      entity_type: "project",
-      entity_id: entityId,
-      entity_title: slug.trim(),
-    });
-
-    toast.success(mode === "edit" ? "Project updated" : "Project created");
-    router.push("/admin/projects");
-    router.refresh();
   };
 
   const onPreviewUpdate = useCallback((updates: Partial<Project>) => {
