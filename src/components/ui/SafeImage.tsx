@@ -26,6 +26,12 @@ export default function SafeImage({
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Guard against non-string src
+  if (typeof src !== "string" || !src) {
+    setHasError(true);
+    setIsLoading(false);
+  }
+
   const handleError = () => {
     setHasError(true);
     setIsLoading(false);

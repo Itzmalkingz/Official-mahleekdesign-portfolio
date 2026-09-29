@@ -149,10 +149,12 @@ export default function ProjectForm({ initial, mode = "create" }: Props) {
   const [shortDescription, setShortDescription] = useState(initial?.short_description ?? "");
   const [liveUrl, setLiveUrl] = useState(initial?.live_url ?? "");
   const [cover, setCover] = useState<PendingImage | null>(
-    initial?.cover_image ? { url: initial.cover_image } : null
+    typeof initial?.cover_image === "string" ? { url: initial.cover_image } : null
   );
   const [gallery, setGallery] = useState<PendingImage[]>(
-    (initial?.images ?? []).map((i) => ({ url: i.image_url, altText: i.alt_text }))
+    (initial?.images ?? [])
+      .filter((i): i is { image_url: string; alt_text?: string; sort_order: number } => typeof i.image_url === "string")
+      .map((i) => ({ url: i.image_url, altText: i.alt_text }))
   );
   const [published, setPublished] = useState(initial?.published ?? false);
   const [featured, setFeatured] = useState(initial?.featured ?? false);
@@ -176,7 +178,9 @@ export default function ProjectForm({ initial, mode = "create" }: Props) {
   const [technologies, setTechnologies] = useState((initial?.technologies ?? []).join(", "));
   const [githubUrl, setGithubUrl] = useState(initial?.github_url ?? "");
 
-  const [websitePreviewUrl, setWebsitePreviewUrl] = useState(initial?.website_preview_url ?? "");
+  const [websitePreviewUrl, setWebsitePreviewUrl] = useState(
+    typeof initial?.website_preview_url === "string" ? initial.website_preview_url : ""
+  );
   const [websitePreviewStatus, setWebsitePreviewStatus] = useState(initial?.website_preview_status ?? "not_generated");
   const [websitePreviewGeneratedAt, setWebsitePreviewGeneratedAt] = useState(initial?.website_preview_generated_at ?? null);
   const [websitePreviewViewport, setWebsitePreviewViewport] = useState(initial?.website_preview_viewport ?? "desktop");

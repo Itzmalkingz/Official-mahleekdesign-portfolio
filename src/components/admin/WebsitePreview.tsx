@@ -67,8 +67,9 @@ export default function WebsitePreview({
   const [iframeError, setIframeError] = useState(false);
 
   useEffect(() => {
-    if (project?.website_preview_url) {
-      setPreviewUrl(project.website_preview_url);
+    const url = project?.website_preview_url;
+    if (typeof url === "string") {
+      setPreviewUrl(url);
     }
   }, [project?.website_preview_url]);
 

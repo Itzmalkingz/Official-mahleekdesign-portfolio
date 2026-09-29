@@ -36,7 +36,10 @@ export default function ProjectPreview({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  const previewImage = project.website_preview_url || project.cover_image;
+  const previewImage = (() => {
+    const img = project.website_preview_url || project.cover_image;
+    return typeof img === "string" ? img : null;
+  })();
   const categoryLabel =
     project.category === "brand-web"
       ? "Brand + Web"

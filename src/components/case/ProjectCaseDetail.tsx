@@ -34,7 +34,10 @@ export default function ProjectCaseDetail({ project, related, backHref, backLabe
   ];
 
   const isWebProject = project.category === "web-systems" || project.category === "brand-web";
-  const heroImage = project.website_preview_url || project.cover_image;
+  const heroImage = (() => {
+    const img = project.website_preview_url || project.cover_image;
+    return typeof img === "string" ? img : null;
+  })();
 
   const caseSections = [
     { key: "challenge", label: "The Challenge", body: project.challenge },
