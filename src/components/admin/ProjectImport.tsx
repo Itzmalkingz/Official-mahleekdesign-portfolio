@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import type { Project } from "@/lib/types";
 import { Field } from "./ui";
 import { IconFolder, IconImage, IconLink, IconClose, IconCheck } from "./icons";
+import SafeImage from "@/components/ui/SafeImage";
 
 export type ImportedProject = Partial<Project> & { _screenshot?: string; _caseStudy?: string };
 
@@ -154,8 +155,8 @@ export default function ProjectImport({ onImported }: { onImported: (p: Imported
           {result && (
             <div style={{ marginTop: "1rem", border: "1px solid var(--aline)", borderRadius: 12, padding: "0.9rem 1rem", display: "grid", gap: "0.7rem", background: "var(--apaper)" }}>
               <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
-                {result.cover_image ? (
-                  <img src={result.cover_image} alt="" style={{ width: 120, height: 80, borderRadius: 8, objectFit: "cover", flex: "none", border: "1px solid var(--aline)" }} />
+                {typeof result.cover_image === "string" ? (
+                  <SafeImage src={result.cover_image} alt="" style={{ width: 120, height: 80, borderRadius: 8, objectFit: "cover", flex: "none", border: "1px solid var(--aline)" }} />
                 ) : (
                   <div style={{ width: 120, height: 80, borderRadius: 8, background: "var(--aline-soft)", flex: "none", display: "grid", placeItems: "center", color: "var(--aslate)" }}>
                     <IconImage size={20} />

@@ -29,8 +29,10 @@ export default function ProjectCaseDetail({ project, related, backHref, backLabe
     : [];
 
   const allLightboxImages: { src: string; alt: string }[] = [
-    ...(project.cover_image ? [{ src: project.cover_image, alt: project.title }] : []),
-    ...sortedImages.map((img) => ({ src: img.image_url, alt: img.alt_text || project.title })),
+    ...(typeof project.cover_image === "string" ? [{ src: project.cover_image, alt: project.title }] : []),
+    ...sortedImages
+      .filter((img): img is ProjectImage & { image_url: string } => typeof img.image_url === "string")
+      .map((img) => ({ src: img.image_url, alt: img.alt_text || project.title })),
   ];
 
   const isWebProject = project.category === "web-systems" || project.category === "brand-web";
@@ -122,7 +124,7 @@ export default function ProjectCaseDetail({ project, related, backHref, backLabe
         )}
 
         {/* Hero / Cover Image - natural aspect ratio, no fixed height */}
-        {(heroImage || project.cover_image) && (
+        {heroImage && (
           <RevealOnScroll delay={60}>
             <figure style={{ marginBottom: "3rem" }}>
               <div
@@ -136,7 +138,7 @@ export default function ProjectCaseDetail({ project, related, backHref, backLabe
                 onClick={() => openLightbox(0)}
               >
                 <SafeImage
-                  src={heroImage || project.cover_image!}
+                  src={heroImage}
                   alt={project.title}
                   style={{
                     width: "100%",
@@ -149,7 +151,7 @@ export default function ProjectCaseDetail({ project, related, backHref, backLabe
                   loading="eager"
                 />
               </div>
-              {(project.cover_image && project.website_preview_url) && (
+              {(typeof project.cover_image === "string" && typeof project.website_preview_url === "string") && (
                 <figcaption style={{ textAlign: "center", marginTop: "0.75rem", fontSize: "0.8rem", color: "var(--slate)" }}>
                   Click to expand
                 </figcaption>
@@ -215,7 +217,7 @@ export default function ProjectCaseDetail({ project, related, backHref, backLabe
                       gap: "0.75rem",
                       cursor: "zoom-in",
                     }}
-                    onClick={() => openLightbox((project.cover_image ? 1 : 0) + idx)}
+                    onClick={() => openLightbox((typeof project.cover_image === "string" ? 1 : 0) + idx)}
                   >
                     <div
                       style={{

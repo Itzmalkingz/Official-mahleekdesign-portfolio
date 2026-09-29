@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import type { Project } from "@/lib/types";
 import { PageHead, Badge, EmptyState, SkeletonRows, ConfirmDialog, MigrateBadge } from "@/components/admin/ui";
 import { IconPlus, IconSearch, IconExternal, IconEdit, IconTrash, IconFolder, IconCheck } from "@/components/admin/icons";
+import SafeImage from "@/components/ui/SafeImage";
 
 const PAGE_SIZE = 12;
 const categoryLabels: Record<string, string> = {
@@ -148,8 +149,8 @@ export default function ProjectsPage() {
                   <tr key={p.id}>
                     <td>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                        {p.cover_image ? (
-                          <img src={p.cover_image} alt="" style={{ width: 46, height: 40, borderRadius: 6, objectFit: "cover", border: "1px solid var(--aline)" }} />
+                        {typeof p.cover_image === "string" ? (
+                          <SafeImage src={p.cover_image} alt="" style={{ width: 46, height: 40, borderRadius: 6, objectFit: "cover", border: "1px solid var(--aline)" }} />
                         ) : (
                           <div style={{ width: 46, height: 40, borderRadius: 6, background: "var(--apaper-2)" }} />
                         )}
