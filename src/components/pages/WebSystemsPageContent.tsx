@@ -5,6 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import type { Project } from "@/lib/types";
 import RevealOnScroll from "@/components/ui/RevealOnScroll";
+import ProjectPreview from "@/components/ui/ProjectPreview";
 
 const systemTypes = [
   {
@@ -155,24 +156,13 @@ export default function WebSystemsPageContent() {
         <div className="project-stack" style={{ marginTop: "2rem" }}>
           {projects.map((project, i) => (
             <RevealOnScroll key={project.id} delay={Math.min(i * 80, 300)}>
-              <Link href={`/work/${project.slug}`} className="project-panel" aria-label={`Open ${project.title}`}>
-                <div className="project-index">{String(i + 1).padStart(2, "0")}</div>
-                <div className="project-visual">
-                  {project.cover_image ? (
-                    <img src={project.cover_image} alt={project.title} loading="lazy" />
-                  ) : (
-                    <div style={{ width: "100%", height: "100%", minHeight: "18rem", background: "linear-gradient(135deg, rgba(19,99,223,0.15), rgba(78,151,255,0.1))" }} />
-                  )}
-                </div>
-                <div className="project-copy">
-                  <span className="project-tag">{project.category === "brand-web" ? "Brand + Web" : "Web System"}</span>
-                  <h3>{project.title}</h3>
-                  {project.short_description && <p>{project.short_description}</p>}
-                  {project.live_url && (
-                    <span className="project-link">View Live Project</span>
-                  )}
-                </div>
-              </Link>
+              <ProjectPreview
+                project={project}
+                href={`/work/${project.slug}`}
+                index={i}
+                showIndex
+                size="default"
+              />
             </RevealOnScroll>
           ))}
         </div>

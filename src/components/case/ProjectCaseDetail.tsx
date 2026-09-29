@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { Project, ProjectImage } from "@/lib/types";
 import RevealOnScroll from "@/components/ui/RevealOnScroll";
 import SafeImage from "@/components/ui/SafeImage";
+import ProjectPreview from "@/components/ui/ProjectPreview";
 
 const categoryLabels: Record<string, string> = {
   "brand-identity": "Brand Identity",
@@ -363,28 +364,17 @@ export default function ProjectCaseDetail({ project, related, backHref, backLabe
                 Related {backLabel === "Work" ? "Projects" : "Systems"}
               </h2>
               <div className="project-stack" style={{ marginTop: "1.5rem" }}>
-                {related.map((rp, i) => {
-                  const rpPreview = rp.website_preview_url || rp.cover_image;
-                  return (
-                    <RevealOnScroll key={rp.id} delay={Math.min(i * 80, 240)}>
-                      <Link href={`/work/${rp.slug}`} className="project-panel" aria-label={`Open ${rp.title}`}>
-                        <div className="project-index">{String(i + 1).padStart(2, "0")}</div>
-                        <div className="project-visual">
-                          {rpPreview ? (
-                            <SafeImage src={rpPreview} alt={rp.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                          ) : (
-                            <div style={{ width: "100%", height: "100%", minHeight: "12rem", background: "linear-gradient(135deg, rgba(19,99,223,0.15), rgba(78,151,255,0.08))" }} />
-                          )}
-                        </div>
-                        <div className="project-copy">
-                          <span className="project-tag">{categoryLabels[rp.category] || rp.category}</span>
-                          <h3>{rp.title}</h3>
-                          {rp.short_description && <p>{rp.short_description}</p>}
-                        </div>
-                      </Link>
-                    </RevealOnScroll>
-                  );
-                })}
+                {related.map((rp, i) => (
+                  <RevealOnScroll key={rp.id} delay={Math.min(i * 80, 240)}>
+                    <ProjectPreview
+                      project={rp}
+                      href={`/work/${rp.slug}`}
+                      index={i}
+                      showIndex
+                      size="default"
+                    />
+                  </RevealOnScroll>
+                ))}
               </div>
             </div>
           </RevealOnScroll>

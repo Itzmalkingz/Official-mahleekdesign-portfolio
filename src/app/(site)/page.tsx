@@ -8,6 +8,7 @@ import RevealOnScroll from "@/components/ui/RevealOnScroll";
 import ScrollProgress from "@/components/ui/ScrollProgress";
 import Parallax from "@/components/ui/Parallax";
 import BrandManifesto from "@/components/ui/BrandManifesto";
+import ProjectPreview from "@/components/ui/ProjectPreview";
 
 export default function HomePage() {
   const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
@@ -321,24 +322,13 @@ export default function HomePage() {
           <div className="project-stack" style={{ marginTop: "2rem" }}>
             {featuredProjects.map((project, i) => (
               <RevealOnScroll key={project.id} delay={i * 80}>
-                <Link href={`/work/${project.slug}`} className="project-panel" aria-label={`Open ${project.title}`}>
-                  <div className="project-index">{String(i + 1).padStart(2, "0")}</div>
-                  <div className="project-visual">
-                    {project.cover_image ? (
-                      <img src={project.cover_image} alt={project.title} loading="lazy" />
-                    ) : (
-                      <div style={{ width: "100%", height: "100%", minHeight: "18rem", background: "linear-gradient(135deg, rgba(19, 99, 223, 0.18), rgba(78, 151, 255, 0.12))" }} />
-                    )}
-                  </div>
-                  <div className="project-copy">
-                    <span className="project-tag">{categoryLabels[project.category] || project.category}</span>
-                    <h3>{project.title}</h3>
-                    {project.short_description && <p>{project.short_description}</p>}
-                    {project.live_url && (
-                      <span className="project-link">View Live Project</span>
-                    )}
-                  </div>
-                </Link>
+                <ProjectPreview
+                  project={project}
+                  href={`/work/${project.slug}`}
+                  index={i}
+                  showIndex
+                  size="default"
+                />
               </RevealOnScroll>
             ))}
           </div>

@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import type { Project } from "@/lib/types";
 import RevealOnScroll from "@/components/ui/RevealOnScroll";
+import ProjectPreview from "@/components/ui/ProjectPreview";
 
 const categoryLabels: Record<string, string> = {
   "brand-identity": "Brand Identity",
@@ -105,32 +105,17 @@ export default function WorkPage() {
         </div>
       ) : (
         <div className="project-stack" style={{ marginTop: "3rem" }}>
-          {filteredProjects.map((project, i) => {
-            // Use website preview for web projects, otherwise cover image
-            const previewImage = project.website_preview_url || project.cover_image;
-            return (
-              <RevealOnScroll key={project.id} delay={Math.min(i * 60, 300)}>
-                <Link href={`/work/${project.slug}`} className="project-panel" aria-label={`Open ${project.title}`}>
-                  <div className="project-index">{String(i + 1).padStart(2, "0")}</div>
-                  <div className="project-visual">
-                    {previewImage ? (
-                      <img src={previewImage} alt={project.title} loading="lazy" />
-                    ) : (
-                      <div style={{ width: "100%", height: "100%", minHeight: "18rem", background: "linear-gradient(135deg, rgba(19,99,223,0.15), rgba(78,151,255,0.1))" }} />
-                    )}
-                  </div>
-                  <div className="project-copy">
-                    <span className="project-tag">{categoryLabels[project.category] || project.category}</span>
-                    <h3>{project.title}</h3>
-                    {project.short_description && <p>{project.short_description}</p>}
-                    {project.live_url && (
-                      <span className="project-link">View Live Project</span>
-                    )}
-                  </div>
-                </Link>
-              </RevealOnScroll>
-            );
-          })}
+          {filteredProjects.map((project, i) => (
+            <RevealOnScroll key={project.id} delay={Math.min(i * 60, 300)}>
+              <ProjectPreview
+                project={project}
+                href={`/work/${project.slug}`}
+                index={i}
+                showIndex
+                size="default"
+              />
+            </RevealOnScroll>
+          ))}
         </div>
       )}
     </section>
