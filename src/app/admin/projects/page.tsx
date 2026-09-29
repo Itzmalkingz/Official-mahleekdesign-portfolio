@@ -149,9 +149,9 @@ export default function ProjectsPage() {
                   <tr key={p.id}>
                     <td>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                        {typeof p.cover_image === "string" ? (
-                          <SafeImage src={p.cover_image} alt="" style={{ width: 46, height: 40, borderRadius: 6, objectFit: "cover", border: "1px solid var(--aline)" }} />
-                        ) : (
+{typeof p.cover_image === "string" && p.cover_image ? (
+  <SafeImage src={p.cover_image} alt="" style={{ width: 46, height: 40, borderRadius: 6, objectFit: "cover", border: "1px solid var(--aline)" }} />
+) : (
                           <div style={{ width: 46, height: 40, borderRadius: 6, background: "var(--apaper-2)" }} />
                         )}
                         <div>
@@ -160,15 +160,15 @@ export default function ProjectsPage() {
                               {p.title}
                             </Link>
                           </div>
-                          <div className="row-sub">/{p.slug} {p.year ? `· ${p.year}` : ""}</div>
+                          <div className="row-sub">/{p.slug} {p.year ? `· ${String(p.year)}` : ""}</div>
                         </div>
                       </div>
                     </td>
-                    <td><Badge value={categoryLabels[p.category] || p.category} /></td>
+                    <td><Badge value={categoryLabels[String(p.category)] || String(p.category)} /></td>
                     <td>
                       {p.archived ? <Badge value="archived" /> : <Badge value={p.published ? "published" : "draft"} />}
                     </td>
-                    <td style={{ color: "var(--aslate)", fontSize: "0.8rem" }}>{p.sort_order}</td>
+                    <td style={{ color: "var(--aslate)", fontSize: "0.8rem" }}>{Number(p.sort_order)}</td>
                     <td>
                       <div className="ac-row-actions">
                         <button className="ac-btn sm ghost" onClick={() => togglePublished(p)} title={p.published ? "Unpublish" : "Publish"}>

@@ -96,8 +96,9 @@ const BADGE_TONE: Record<string, string> = {
 
 export function Badge({ value }: { value?: string | null }) {
   if (!value) return null;
-  const tone = BADGE_TONE[value.toLowerCase()] || "blue";
-  return <span className={`ac-badge ${tone}`}>{value.replaceAll("-", " ")}</span>;
+  const strValue = String(value);
+  const tone = BADGE_TONE[strValue.toLowerCase()] || "blue";
+  return <span className={`ac-badge ${tone}`}>{strValue.replaceAll("-", " ")}</span>;
 }
 
 export function StatusDot({ tone }: { tone: keyof typeof BADGE_TONE }) {
