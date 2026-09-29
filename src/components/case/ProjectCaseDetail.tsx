@@ -24,7 +24,7 @@ export default function ProjectCaseDetail({ project, related, backHref, backLabe
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
-  const sortedImages: ProjectImage[] = project.images
+  const sortedImages: ProjectImage[] = Array.isArray(project.images)
     ? [...project.images].sort((a, b) => a.sort_order - b.sort_order)
     : [];
 
@@ -208,8 +208,10 @@ export default function ProjectCaseDetail({ project, related, backHref, backLabe
                 {sortedImages.length === 1 ? "Project Image" : "Project Gallery"}
               </p>
               <div style={{ display: "grid", gap: "2.5rem" }}>
-                {sortedImages.map((img, idx) => (
-                  <figure
+                {sortedImages
+                  .filter((img): img is ProjectImage & { image_url: string } => typeof img.image_url === "string")
+                  .map((img, idx) => (
+                    <figure
                     key={img.id || idx}
                     style={{
                       margin: 0,

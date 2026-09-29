@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import toast from "react-hot-toast";
 import type { Project, PreviewStatus } from "@/lib/types";
 import { IconExternal, IconRefresh, IconUpload, IconTrash, IconAlert, IconLoader } from "./icons";
+import SafeImage from "@/components/ui/SafeImage";
 
 const statusLabels: Record<PreviewStatus, string> = {
   not_generated: "Not Generated",
@@ -230,7 +231,7 @@ export default function WebsitePreview({
               <IconLoader size={14} style={{ animation: generating ? "spin 1s linear infinite" : "none" }} />
               {generating ? "Generating…" : "Generate Preview"}
             </button>
-            {previewUrl && (
+{previewUrl && typeof previewUrl === "string" && (
               <button className="ac-btn ghost" onClick={handleOpenWebsite} title="Open website">
                 <IconExternal size={14} /> Open Site
               </button>
@@ -257,7 +258,7 @@ export default function WebsitePreview({
             </label>
             <div style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: "1px solid var(--aline)", background: "var(--apaper-1)" }}>
               <div style={{ aspectRatio: "16/10", maxWidth: "100%", overflow: "hidden" }}>
-                <img
+                <SafeImage
                   src={previewUrl}
                   alt="Website preview"
                   style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
